@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventPass — Sign In</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='%23070d1c'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2338bdf8'/%3E%3Cellipse cx='32' cy='32' rx='21' ry='8.5' transform='rotate(-26 32 32)' stroke='%237dd3fc' stroke-width='2.4'/%3E%3Ccircle cx='48' cy='24' r='3' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --lgs-bg: #070b16;
+      --lgs-text: #f8fafc;
+      --lgs-muted: rgba(248, 250, 252, 0.68);
+      --lgs-accent: #38bdf8;
+      --lgs-accent-2: #2563eb;
+      --mx: 50%;
+      --my: 50%;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--lgs-bg);
+      color: var(--lgs-text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    }
+    .lgs {
+      position: relative;
+      min-height: 100dvh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+    .lgs--lagoon { --lgs-bg: #05131c; --lgs-accent: #22d3ee; --lgs-accent-2: #0284c7; }
+    .lgs__aurora { position: fixed; inset: -15%; pointer-events: none; filter: blur(80px); opacity: 0.75; }
+    .lgs__aurora span { position: absolute; border-radius: 50%; animation: lgsFloat 14s ease-in-out infinite alternate; }
+    .lgs__aurora span:nth-child(1) { width: 420px; height: 420px; top: 8%; left: 12%; background: rgba(37, 99, 235, 0.55); }
+    .lgs__aurora span:nth-child(2) { width: 380px; height: 380px; bottom: 10%; right: 14%; background: rgba(56, 189, 248, 0.45); animation-delay: -4s; }
+    .lgs__aurora span:nth-child(3) { width: 300px; height: 300px; top: 45%; right: 28%; background: rgba(99, 102, 241, 0.4); animation-delay: -8s; }
+    .lgs__aurora span:nth-child(4) { width: 260px; height: 260px; bottom: 20%; left: 25%; background: rgba(14, 165, 233, 0.35); animation-delay: -11s; }
+    @keyframes lgsFloat { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(35px, -28px) scale(1.1); } }
+    .lgs__lines {
+      position: fixed; inset: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at center, black 35%, transparent 85%);
+    }
+    .lgs__top-bar {
+      position: fixed; top: 16px; right: 16px; left: 16px; z-index: 10;
+      display: flex; justify-content: space-between; align-items: center; pointer-events: none;
+    }
+    .lgs__demo-pills { display: flex; gap: 8px; pointer-events: auto; }
+    .lgs__pill-btn {
+      padding: 7px 13px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      color: rgba(248, 250, 252, 0.88); font-size: 11.5px; font-weight: 600; cursor: pointer; pointer-events: auto;
+    }
+    .lgs__pill-btn:hover { background: rgba(255, 255, 255, 0.14); border-color: var(--lgs-accent); }
+    .lgs__panel {
+      position: relative; width: 100%; max-width: 420px; margin-top: 28px; padding: 30px 28px; border-radius: 30px;
+      background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(28px) saturate(170%); -webkit-backdrop-filter: blur(28px) saturate(170%);
+      border: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      z-index: 1;
+    }
+    .lgs__panel.is-pulse { box-shadow: 0 0 0 2px var(--lgs-accent), 0 30px 70px rgba(56, 189, 248, 0.28); }
+    .lgs__panel.is-squish { animation: lgsSquish 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+    .lgs__panel.is-shake { animation: lgsShake 0.36s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+    @keyframes lgsSquish { 0% { transform: scale(1, 1); } 40% { transform: scale(1.03, 0.96); } 100% { transform: scale(1, 1); } }
+    @keyframes lgsShake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); } }
+    .lgs__rim {
+      position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+      background: radial-gradient(320px circle at var(--mx) var(--my), rgba(125, 211, 252, 0.35), transparent 65%);
+      mix-blend-mode: screen;
+    }
+    .lgs__brand { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 12px; font-size: 14px; font-weight: 700; color: var(--lgs-accent); }
+    .lgs__title { margin: 0 0 4px; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+    .lgs__sub { margin: 0 0 18px; font-size: 14px; color: var(--lgs-muted); }
+    .lgs__modes {
+      position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 14px;
+      background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); margin-bottom: 16px;
+    }
+    .lgs__drop {
+      position: absolute; top: 4px; bottom: 4px; left: 0; border-radius: 10px;
+      background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); pointer-events: none; will-change: transform, width;
+    }
+    .lgs__mode {
+      position: relative; z-index: 1; border: none; background: transparent; color: var(--lgs-muted);
+      padding: 8px 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .lgs__mode[aria-checked="true"] { color: #fff; }
+    .lgs__roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .lgs__role-btn {
+      padding: 8px 10px; border-radius: 11px; border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05); color: var(--lgs-muted); font-size: 12.5px; font-weight: 600; cursor: pointer;
+    }
+    .lgs__role-btn.is-active { background: rgba(56, 189, 248, 0.18); border-color: var(--lgs-accent); color: #fff; }
+    .lgs__form { display: flex; flex-direction: column; gap: 13px; }
+    .lgs__field { display: flex; flex-direction: column; gap: 6px; }
+    .lgs__label-row { display: flex; justify-content: space-between; align-items: center; }
+    .lgs__label { font-size: 12px; font-weight: 600; color: var(--lgs-muted); }
+    .lgs__link { font-size: 12px; color: var(--lgs-accent); text-decoration: none; cursor: pointer; }
+    .lgs__pw-wrap { position: relative; display: flex; align-items: center; }
+    .lgs__pw-wrap .lgs__input { padding-right: 96px; }
+    .lgs__caps {
+      position: absolute; right: 38px; display: none; padding: 2px 6px; border-radius: 6px;
+      background: rgba(251, 191, 36, 0.18); border: 1px solid rgba(251, 191, 36, 0.45);
+      color: #fde68a; font-size: 9.5px; font-weight: 700;
+    }
+    .lgs__caps.is-on { display: inline-block; }
+    .lgs__eye { position: absolute; right: 10px; background: none; border: none; color: var(--lgs-muted); cursor: pointer; padding: 4px; }
+    .lgs__eye:hover { color: #fff; }
+    .lgs__input {
+      width: 100%; padding: 11px 14px; border-radius: 13px; border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 14px; outline: none;
+    }
+    .lgs__input:focus { border-color: var(--lgs-accent); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22); }
+    .lgs__strength { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 4px; }
+    .lgs__strength span { height: 3.5px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); transition: background 0.3s ease; }
+    .lgs__strength[data-score="1"] span:nth-child(1) { background: #f87171; }
+    .lgs__strength[data-score="2"] span:nth-child(-n+2) { background: #fbbf24; }
+    .lgs__strength[data-score="3"] span:nth-child(-n+3) { background: #38bdf8; }
+    .lgs__strength[data-score="4"] span { background: #34d399; }
+    .lgs__more {
+      display: grid; grid-template-rows: 1fr; opacity: 1; transform: translateY(0);
+      transition: grid-template-rows 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .lgs__more[data-open="false"] { grid-template-rows: 0fr; opacity: 0; transform: translateY(-6px); pointer-events: none; }
+    .lgs__more > div { overflow: hidden; }
+    .lgs__hint { margin: 0; font-size: 12px; color: var(--lgs-muted); }
+    .lgs__error { margin: 0; padding: 10px 12px; border-radius: 12px; background: rgba(239, 68, 68, 0.16); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; font-size: 13px; }
+    .lgs__submit {
+      margin-top: 4px; padding: 13px 16px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.25);
+      background: linear-gradient(135deg, var(--lgs-accent), var(--lgs-accent-2)); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .lgs__roll span { display: inline-block; white-space: pre; animation: lgsCharIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--i) * 24ms); }
+    @keyframes lgsCharIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+    .lgs__foot { margin: 16px 0 0; text-align: center; font-size: 13px; color: var(--lgs-muted); }
+    .lgs__foot a { color: var(--lgs-accent); font-weight: 600; text-decoration: none; cursor: pointer; }
+    .lgs__done, .lgs__forgot { display: none; text-align: center; padding: 8px 0; }
+    .lgs__forgot { text-align: left; }
+    .lgs__mark {
+      width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; font-weight: 700;
+      background: rgba(56, 189, 248, 0.18); border: 1px solid rgba(56, 189, 248, 0.4); color: var(--lgs-accent);
+    }
+    .lgs__badge {
+      display: inline-block; margin-top: 6px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: var(--lgs-accent); font-size: 11px; font-weight: 700;
+    }
+    .lgs__ghost {
+      margin-top: 10px; padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .lgs__footer {
+      position: relative; z-index: 1; width: 100%; max-width: 560px; padding: 14px 20px; border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.12); text-align: center; font-size: 11.5px; line-height: 1.55; color: rgba(248, 250, 252, 0.62);
+    }
+    .lgs__footer strong { color: rgba(248, 250, 252, 0.9); }
+    .lgs__footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 14px; margin-top: 8px; }
+    .lgs__footer-btn { background: none; border: none; padding: 0; color: var(--lgs-accent); font-size: 11.5px; font-weight: 600; cursor: pointer; }
+    .lgs__modal-backdrop {
+      position: fixed; inset: 0; z-index: 50; display: none; place-items: center; padding: 20px;
+      background: rgba(3, 7, 18, 0.72); backdrop-filter: blur(12px);
+    }
+    .lgs__modal-backdrop.is-open { display: grid; }
+    .lgs__modal {
+      width: 100%; max-width: 460px; padding: 24px; border-radius: 24px;
+      background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(255, 255, 255, 0.2); color: #f8fafc;
+    }
+    .lgs__modal h3 { margin: 0 0 10px; font-size: 17px; color: var(--lgs-accent); }
+    .lgs__modal p, .lgs__modal li { font-size: 13px; line-height: 1.6; color: rgba(248, 250, 252, 0.8); }
+  </style>
+</head>
+<body>
+  <section id="lgs-root" class="lgs">
+    <div class="lgs__aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="lgs__lines" aria-hidden="true"></div>
+
+    <div class="lgs__top-bar">
+      <div class="lgs__demo-pills">
+        <button id="demo-attendee" class="lgs__pill-btn" type="button">Demo Attendee</button>
+        <button id="demo-organizer" class="lgs__pill-btn" type="button">Demo Organizer</button>
+      </div>
+      <button id="theme-toggle" class="lgs__pill-btn" type="button">Theme: Dusk</button>
+    </div>
+
+    <div id="glass-panel" class="lgs__panel">
+      <span class="lgs__rim" aria-hidden="true"></span>
+
+      <div id="done-view" class="lgs__done" role="status">
+        <span class="lgs__mark" aria-hidden="true">✓</span>
+        <h2 id="done-title" class="lgs__title">Welcome back</h2>
+        <p id="done-sub" class="lgs__sub" style="margin-bottom:8px"></p>
+        <div id="done-badge" class="lgs__badge"></div>
+        <br />
+        <button id="reset-btn" type="button" class="lgs__ghost">Not you? Switch account</button>
+      </div>
+
+      <div id="forgot-view" class="lgs__forgot">
+        <p class="lgs__brand">EventPass Recovery</p>
+        <h2 class="lgs__title">Reset password</h2>
+        <p class="lgs__sub">Enter your campus or registered email to receive a reset code.</p>
+        <form id="forgot-form" class="lgs__form">
+          <label class="lgs__field">
+            <span class="lgs__label">Account Email</span>
+            <input id="forgot-email" class="lgs__input" type="email" placeholder="you@eventpass.edu" required />
+          </label>
+          <p id="forgot-status" class="lgs__hint" style="color:var(--lgs-accent);display:none"></p>
+          <button type="submit" class="lgs__submit">Send reset link</button>
+        </form>
+        <p class="lgs__foot"><a id="back-to-signin">← Back to Sign in</a></p>
+      </div>
+
+      <div id="auth-view">
+        <p class="lgs__brand">
+          <svg width="26" height="26" viewBox="0 0 64 64" fill="none" style="border-radius:8px">
+            <defs><linearGradient id="c4-g" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs>
+            <rect x="4" y="4" width="56" height="56" rx="16" fill="#070d1c" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1.5"/>
+            <circle cx="32" cy="32" r="10" fill="url(#c4-g)"/>
+            <ellipse cx="32" cy="32" rx="21" ry="8.5" transform="rotate(-26 32 32)" stroke="#7dd3fc" stroke-width="2.4"/>
+            <circle cx="48" cy="24" r="3" fill="#ffffff"/>
+          </svg>
+          EventPass
+        </p>
+        <h2 id="form-heading" class="lgs__title">Sign in</h2>
+        <p class="lgs__sub">Let's plan your next event!</p>
+
+        <div class="lgs__roles" role="group" aria-label="Account role">
+          <button id="role-attendee" type="button" class="lgs__role-btn is-active">Attendee Pass</button>
+          <button id="role-organizer" type="button" class="lgs__role-btn">Organizer Hub</button>
+        </div>
+
+        <div id="mode-track" class="lgs__modes" role="radiogroup">
+          <span id="glass-drop" class="lgs__drop"></span>
+          <button id="opt-pw" type="button" role="radio" aria-checked="true" class="lgs__mode">Password</button>
+          <button id="opt-link" type="button" role="radio" aria-checked="false" class="lgs__mode">Magic link</button>
+        </div>
+
+        <form id="auth-form" class="lgs__form" novalidate>
+          <div id="name-wrap" class="lgs__more" data-open="false">
+            <div>
+              <label class="lgs__field">
+                <span class="lgs__label">Full Name</span>
+                <input id="name-input" class="lgs__input" type="text" placeholder="Aniket Hinge" />
+              </label>
+            </div>
+          </div>
+
+          <label class="lgs__field">
+            <span class="lgs__label">Email</span>
+            <input id="email-input" class="lgs__input" type="email" placeholder="you@eventpass.edu" required />
+          </label>
+
+          <div id="pw-wrap" class="lgs__more" data-open="true">
+            <div>
+              <label class="lgs__field">
+                <span class="lgs__label-row">
+                  <span class="lgs__label">Password</span>
+                  <a id="forgot-link" class="lgs__link">Forgot?</a>
+                </span>
+                <div class="lgs__pw-wrap">
+                  <input id="pw-input" class="lgs__input" type="password" placeholder="••••••••" />
+                  <span id="caps-badge" class="lgs__caps">CAPS</span>
+                  <button id="eye-btn" type="button" class="lgs__eye" aria-label="Toggle password visibility">👁</button>
+                </div>
+                <div id="pw-strength" class="lgs__strength" data-score="0" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+              </label>
+            </div>
+          </div>
+
+          <div id="pin-wrap" class="lgs__more" data-open="false">
+            <div>
+              <label class="lgs__field">
+                <span class="lgs__label-row">
+                  <span class="lgs__label">4-Digit Organizer PIN</span>
+                  <span class="lgs__label" style="opacity:0.7">Demo: 1234</span>
+                </span>
+                <input id="pin-input" class="lgs__input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" />
+              </label>
+            </div>
+          </div>
+
+          <p id="link-hint" class="lgs__hint" style="display:none">We'll email you a link that signs you in — no password needed.</p>
+          <p id="err-box" class="lgs__error" style="display:none" role="alert"></p>
+
+          <button id="submit-btn" type="submit" class="lgs__submit"><span id="submit-roll" class="lgs__roll"></span></button>
+        </form>
+
+        <p class="lgs__foot"><span id="foot-prefix">New to EventPass?</span> <a id="toggle-signup">Create an account</a></p>
+      </div>
+    </div>
+
+    <footer class="lgs__footer">
+      <div>© 2026 <strong>EventPass</strong>. All rights reserved.</div>
+      <div>Developed as an <strong>On-the-Job Training (OJT)</strong> academic project at <strong>Polaris School of Technology</strong> (Medhavi Skills University) by <strong>Aniket Hinge</strong>.</div>
+      <div>Intended strictly for educational demonstration, campus event workflow testing, and portfolio evaluation—not for commercial ticketing transactions.</div>
+      <div class="lgs__footer-links">
+        <button type="button" class="lgs__footer-btn" data-doc="terms">Terms &amp; Conditions</button>
+        <span>•</span>
+        <button type="button" class="lgs__footer-btn" data-doc="privacy">Privacy &amp; Data Notice</button>
+        <span>•</span>
+        <button type="button" class="lgs__footer-btn" data-doc="ojt">OJT Project Intent</button>
+      </div>
+    </footer>
+
+    <div id="legal-modal" class="lgs__modal-backdrop">
+      <div class="lgs__modal" role="dialog" aria-modal="true">
+        <div id="modal-body"></div>
+        <button id="close-modal" type="button" class="lgs__ghost">Close</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const panel = document.getElementById("glass-panel"), drop = document.getElementById("glass-drop"),
+      optPw = document.getElementById("opt-pw"), optLink = document.getElementById("opt-link"),
+      pwWrap = document.getElementById("pw-wrap"), nameWrap = document.getElementById("name-wrap"),
+      pinWrap = document.getElementById("pin-wrap"), linkHint = document.getElementById("link-hint"),
+      submitRoll = document.getElementById("submit-roll"), errBox = document.getElementById("err-box"),
+      pwInput = document.getElementById("pw-input"), pwStrength = document.getElementById("pw-strength"),
+      capsBadge = document.getElementById("caps-badge"),
+      API_BASE = window.location.port === "5050" ? "" : "http://localhost:5050";
+
+    let mode = "password", role = "attendee", isSignUp = false;
+    const spring = { x: 0, w: 0, vx: 0, tx: 0, tw: 0, raf: 0 };
+
+    function renderRoll(text) {
+      submitRoll.innerHTML = text.split("").map((c, i) => `<span style="--i:${i}">${c === " " ? "&nbsp;" : c}</span>`).join("");
+    }
+    function paintDrop() {
+      const v = Math.abs(spring.vx);
+      drop.style.width = `${spring.w}px`;
+      drop.style.transform = `translateX(${spring.x}px) scale(${(1 + Math.min(0.22, v / 2600)).toFixed(3)}, ${(1 - Math.min(0.12, v / 4200)).toFixed(3)})`;
+    }
+    function aimDrop(targetBtn, instant = false) {
+      spring.tx = targetBtn.offsetLeft; spring.tw = targetBtn.offsetWidth;
+      if (instant) { spring.x = spring.tx; spring.w = spring.tw; spring.vx = 0; paintDrop(); return; }
+      if (spring.raf) return;
+      let last = performance.now();
+      const tick = (now) => {
+        const dt = Math.min(0.032, (now - last) / 1000); last = now;
+        spring.vx += (-(spring.x - spring.tx) * 95 - spring.vx * 18) * dt;
+        spring.x += spring.vx * dt; spring.w += (spring.tw - spring.w) * Math.min(1, dt * 6.5);
+        paintDrop();
+        if (Math.abs(spring.x - spring.tx) < 0.2 && Math.abs(spring.vx) < 2) { spring.x = spring.tx; spring.w = spring.tw; spring.vx = 0; paintDrop(); spring.raf = 0; return; }
+        spring.raf = requestAnimationFrame(tick);
+      };
+      spring.raf = requestAnimationFrame(tick);
+    }
+
+    window.addEventListener("load", () => { aimDrop(optPw, true); renderRoll("Sign in"); });
+    window.addEventListener("resize", () => aimDrop(mode === "password" ? optPw : optLink, true));
+    panel.addEventListener("pointermove", (e) => {
+      const r = panel.getBoundingClientRect();
+      panel.style.setProperty("--mx", `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
+      panel.style.setProperty("--my", `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+    });
+
+    function setRole(nextRole) {
+      role = nextRole; errBox.style.display = "none";
+      document.getElementById("role-attendee").classList.toggle("is-active", role === "attendee");
+      document.getElementById("role-organizer").classList.toggle("is-active", role === "organizer");
+      pinWrap.dataset.open = String(role === "organizer");
+    }
+    document.getElementById("role-attendee").addEventListener("click", () => setRole("attendee"));
+    document.getElementById("role-organizer").addEventListener("click", () => setRole("organizer"));
+
+    function setMode(next) {
+      mode = next; errBox.style.display = "none";
+      optPw.setAttribute("aria-checked", String(mode === "password"));
+      optLink.setAttribute("aria-checked", String(mode === "link"));
+      aimDrop(mode === "password" ? optPw : optLink);
+      pwWrap.dataset.open = String(mode === "password");
+      linkHint.style.display = mode === "link" ? "block" : "none";
+      renderRoll(isSignUp ? "Create account" : mode === "password" ? "Sign in" : "Email me a link");
+    }
+    optPw.addEventListener("click", () => setMode("password"));
+    optLink.addEventListener("click", () => setMode("link"));
+
+    function updateStrength(val) {
+      let score = 0;
+      if (val.length >= 6) score++;
+      if (val.length >= 10) score++;
+      if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      pwStrength.dataset.score = String(val.length ? Math.max(1, score) : 0);
+    }
+    pwInput.addEventListener("input", (e) => updateStrength(e.target.value));
+    pwInput.addEventListener("keyup", (e) => { if (e.getModifierState) capsBadge.classList.toggle("is-on", e.getModifierState("CapsLock")); });
+    document.getElementById("eye-btn").addEventListener("click", () => { pwInput.type = pwInput.type === "password" ? "text" : "password"; });
+
+    function pulsePanel() {
+      panel.classList.remove("is-pulse"); void panel.offsetWidth; panel.classList.add("is-pulse");
+      setTimeout(() => panel.classList.remove("is-pulse"), 600);
+    }
+    document.getElementById("demo-attendee").addEventListener("click", () => {
+      setRole("attendee"); setMode("password");
+      document.getElementById("name-input").value = "Aniket Hinge";
+      document.getElementById("email-input").value = "aniket@polaris.edu";
+      pwInput.value = "EventPass@2026"; updateStrength(pwInput.value); pulsePanel();
+    });
+    document.getElementById("demo-organizer").addEventListener("click", () => {
+      setRole("organizer"); setMode("password");
+      document.getElementById("name-input").value = "Aniket (Lead Organizer)";
+      document.getElementById("email-input").value = "organizer@eventpass.edu";
+      pwInput.value = "AdminPass@2026"; document.getElementById("pin-input").value = "1234";
+      updateStrength(pwInput.value); pulsePanel();
+    });
+
+    document.getElementById("forgot-link").addEventListener("click", () => {
+      document.getElementById("auth-view").style.display = "none";
+      document.getElementById("forgot-view").style.display = "block";
+      document.getElementById("forgot-email").value = document.getElementById("email-input").value;
+    });
+    document.getElementById("back-to-signin").addEventListener("click", () => {
+      document.getElementById("forgot-view").style.display = "none";
+      document.getElementById("auth-view").style.display = "block";
+      document.getElementById("forgot-status").style.display = "none";
+    });
+    document.getElementById("forgot-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const s = document.getElementById("forgot-status");
+      s.textContent = `Password reset link queued for ${document.getElementById("forgot-email").value.trim()}. Check your inbox.`;
+      s.style.display = "block";
+    });
+
+    document.getElementById("toggle-signup").addEventListener("click", () => {
+      isSignUp = !isSignUp; errBox.style.display = "none";
+      document.getElementById("form-heading").textContent = isSignUp ? "Create account" : "Sign in";
+      nameWrap.dataset.open = String(isSignUp);
+      if (isSignUp && mode === "link") setMode("password");
+      document.getElementById("foot-prefix").textContent = isSignUp ? "Already have an account?" : "New to EventPass?";
+      document.getElementById("toggle-signup").textContent = isSignUp ? "Sign in" : "Create an account";
+      renderRoll(isSignUp ? "Create account" : mode === "password" ? "Sign in" : "Email me a link");
+    });
+
+    document.getElementById("theme-toggle").addEventListener("click", (e) => {
+      const lagoon = document.getElementById("lgs-root").classList.toggle("lgs--lagoon");
+      e.target.textContent = lagoon ? "Theme: Lagoon" : "Theme: Dusk";
+    });
+
+    function showError(msg) {
+      errBox.textContent = msg; errBox.style.display = "block";
+      panel.classList.remove("is-shake"); void panel.offsetWidth; panel.classList.add("is-shake");
+    }
+
+    document.getElementById("auth-form").addEventListener("submit", async (e) => {
+      e.preventDefault(); errBox.style.display = "none";
+      const name = document.getElementById("name-input").value.trim();
+      const email = document.getElementById("email-input").value.trim();
+      const password = pwInput.value;
+      const pin = document.getElementById("pin-input").value.trim();
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showError("That email looks incomplete — check for a missing @ or domain.");
+      if (mode === "password" && password.length < 6) return showError("Password must be at least 6 characters.");
+      if (role === "organizer" && !/^\d{4}$/.test(pin)) return showError("Enter a valid 4-digit Organizer PIN (Demo: 1234).");
+
+      renderRoll(isSignUp ? "Creating…" : mode === "password" ? "Signing in…" : "Sending…");
+      let backendSynced = false;
+      try {
+        if (mode === "password") {
+          const endpoint = isSignUp ? "/api/auth/register" : "/api/auth/login";
+          const res = await fetch(`${API_BASE}${endpoint}`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: name || email.split("@")[0], email, password, role, organizerPin: role === "organizer" ? pin : undefined })
+          });
+          const data = await res.json();
+          if (!res.ok || data.error) throw new Error(data.error || "Authentication failed.");
+          if (data.token) localStorage.setItem("eventpass_token", data.token);
+          backendSynced = true;
+        }
+      } catch (err) {
+        if (!(err instanceof TypeError)) { renderRoll(isSignUp ? "Create account" : "Sign in"); return showError(err.message); }
+      }
+
+      localStorage.setItem("eventpass_user", JSON.stringify({ name: name || email.split("@")[0], email, role, mode: backendSynced ? "express-api" : "live-server-demo" }));
+      panel.classList.remove("is-squish"); void panel.offsetWidth; panel.classList.add("is-squish");
+      document.getElementById("auth-view").style.display = "none";
+      document.getElementById("done-view").style.display = "block";
+      document.getElementById("done-title").textContent = mode === "link" ? "Check your inbox" : "Welcome back";
+      document.getElementById("done-sub").innerHTML = mode === "link" ? `We sent a sign-in link to <strong>${email}</strong>.` : `Signed in as <strong>${email}</strong>`;
+      if (mode === "password") { setTimeout(() => { window.location.href = "home.html"; }, 850); }
+      document.getElementById("done-badge").textContent = `${role === "organizer" ? "ORGANIZER HUB" : "ATTENDEE PASS"} • ${backendSynced ? "API CONNECTED" : "DEMO SESSION"}`;
+    });
+
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      document.getElementById("done-view").style.display = "none";
+      document.getElementById("auth-view").style.display = "block";
+      pwInput.value = ""; updateStrength("");
+      renderRoll(isSignUp ? "Create account" : mode === "password" ? "Sign in" : "Email me a link");
+    });
+
+    const docs = {
+      terms: `<h3>Terms &amp; Conditions</h3><p>By accessing EventPass, you acknowledge:</p><ul><li><strong>Academic &amp; Demo Scope:</strong> EventPass is built as an OJT project at Polaris School of Technology and is provided "as is" for demonstration.</li><li><strong>Authorized Access:</strong> Use only authorized student or test accounts.</li><li><strong>No Commercial Liability:</strong> Passes and QR codes carry no monetary or commercial warranty.</li></ul>`,
+      privacy: `<h3>Privacy &amp; Data Notice</h3><ul><li><strong>Minimal Data Collection:</strong> Only email, password hash, and event metadata needed for auth are processed.</li><li><strong>Project Storage:</strong> Stored solely for OJT evaluation and never shared with third parties.</li></ul>`,
+      ojt: `<h3>Polaris School of Technology — OJT Intent</h3><p>Engineered by <strong>Aniket Hinge</strong> under the <strong>On-the-Job Training (OJT)</strong> curriculum at <strong>Polaris School of Technology</strong> to demonstrate full-stack authentication, role-based event pass workflows, and liquid-glass UI engineering.</p>`
+    };
+    document.querySelectorAll("[data-doc]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.getElementById("modal-body").innerHTML = docs[btn.dataset.doc];
+        document.getElementById("legal-modal").classList.add("is-open");
+      });
+    });
+    document.getElementById("close-modal").addEventListener("click", () => document.getElementById("legal-modal").classList.remove("is-open"));
+    document.getElementById("legal-modal").addEventListener("click", (e) => { if (e.target.id === "legal-modal") document.getElementById("legal-modal").classList.remove("is-open"); });
+  </script>
+</body>
+</html>
