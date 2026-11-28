@@ -470,7 +470,7 @@
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showError("That email looks incomplete — check for a missing @ or domain.");
       if (mode === "password" && password.length < 6) return showError("Password must be at least 6 characters.");
-      if (role === "organizer" && !/^\d{4}$/.test(pin)) return showError("Enter a valid 4-digit Organizer PIN (Demo: 1234).");
+      if (role === "organizer" && !/^\d{4}$/.test(pin)) return showError("Enter a valid 4-digit Enter PIN.");
 
       renderRoll(isSignUp ? "Creating…" : mode === "password" ? "Signing in…" : "Sending…");
       let backendSynced = false;
