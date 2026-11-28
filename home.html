@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>EventPass — Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='%23070d1c'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2338bdf8'/%3E%3Cellipse cx='32' cy='32' rx='21' ry='8.5' transform='rotate(-26 32 32)' stroke='%237dd3fc' stroke-width='2.4'/%3E%3Ccircle cx='48' cy='24' r='3' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
       --bg: #070b16;
@@ -242,6 +243,7 @@
       border-radius: 26px;
       background: var(--glass);
       backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1px solid var(--border);
       text-align: center;
       display: flex;
@@ -249,7 +251,20 @@
       align-items: center;
       gap: 14px;
     }
-    .qr-frame { padding: 14px; border-radius: 20px; background: #fff; }
+    .qr-frame {
+      padding: 14px;
+      border-radius: 20px;
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 212px;
+      min-height: 212px;
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.25);
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .qr-frame.is-pop { transform: scale(1.04); }
+    .qr-frame img, .qr-frame canvas { display: block; border-radius: 6px; }
     .qr-code-tag {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 14px;
@@ -259,6 +274,33 @@
       border-radius: 999px;
       background: rgba(56, 189, 248, 0.14);
       border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .qr-select {
+      width: 100%;
+      max-width: 280px;
+      min-height: 40px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(7, 11, 22, 0.65);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
+    }
+    .qr-select:focus { border-color: var(--accent); }
+    .qr-gen-btn {
+      width: 100%;
+      max-width: 260px;
+      min-height: 44px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.38);
+    }
+    .qr-meta {
+      font-size: 11.5px;
+      color: var(--muted);
     }
 
     /* Notifications View */
@@ -481,20 +523,29 @@
       <div class="section-head">
         <div>
           <h2>EventPass QR Code</h2>
-          <p>Present this pass at the venue gate for check-in.</p>
+          <p id="qrSubtitle">Present this scannable pass at the venue gate for check-in.</p>
         </div>
+        <span id="qrRoleTag" class="status-pill is-assigned">Attendee Pass</span>
       </div>
       <div class="qr-panel">
-        <div class="qr-frame">
-          <svg width="176" height="176" viewBox="0 0 21 21" shape-rendering="crispEdges" aria-label="EventPass QR Code">
-            <rect width="21" height="21" fill="#ffffff"/>
-            <path fill="#070b16" d="M1,1h7v7h-7zM2,2v5h5v-5zM3,3h3v3h-3zM13,1h7v7h-7zM14,2v5h5v-5zM15,3h3v3h-3zM1,13h7v7h-7zM2,14v5h5v-5zM3,15h3v3h-3zM9,2h2v2h-2zM10,5h2v3h-2zM2,9h3v2h-3zM6,10h3v2h-3zM11,9h3v2h-3zM16,9h3v3h-3zM9,13h2v4h-2zM13,12h2v2h-2zM16,14h4v2h-4zM12,17h3v3h-3zM17,17h2v3h-2z"/>
-          </svg>
+        <div id="organizerControls" style="display:none;width:100%;flex-direction:column;align-items:center;gap:10px;">
+          <select id="qrEventSelect" class="qr-select" aria-label="Select event for QR code">
+            <option value="OJT Sprint Demo Day">OJT Sprint Demo Day • Innovation Lab</option>
+            <option value="Bengaluru Student Hackathon">Bengaluru Student Hackathon • Open Arena</option>
+            <option value="Winter Open-Source Code Sprint">Winter Open-Source Code Sprint • Tech Hub</option>
+          </select>
         </div>
+
+        <div id="qrFrame" class="qr-frame">
+          <div id="qrCanvas" aria-label="Scannable EventPass QR Code"></div>
+        </div>
+
         <div id="qrPassId" class="qr-code-tag">#EP-2026-8841</div>
         <div id="qrHolderName" style="font-size:16px;font-weight:700;">Aniket Hinge</div>
-        <div style="font-size:12.5px;color:var(--muted);">Ongoing: OJT Sprint Demo Day • Innovation Lab</div>
-        <button id="refreshQrBtn" type="button" class="btn-viewall">Refresh Dynamic Token</button>
+        <div id="qrEventLabel" style="font-size:12.5px;color:var(--muted);">Ongoing: OJT Sprint Demo Day • Innovation Lab</div>
+        <div id="qrTimestamp" class="qr-meta"></div>
+
+        <button id="generateQrBtn" type="button" class="btn-primary qr-gen-btn" style="display:none;">Generate QR</button>
       </div>
     </section>
 
@@ -573,18 +624,122 @@
 
   <script>
     const raw = localStorage.getItem("eventpass_user");
+    let currentUser = { name: "Aniket", email: "aniket@polaris.edu", role: "attendee", staffRole: "attendee" };
     let displayName = "Aniket";
+    let isOrganizer = false;
+
     if (!raw) {
       window.location.href = "index.html";
     } else {
-      const user = JSON.parse(raw);
-      displayName = (user.name || user.email || "User").trim();
+      currentUser = JSON.parse(raw);
+      displayName = (currentUser.name || currentUser.email || "User").trim();
+      isOrganizer = currentUser.staffRole
+        ? currentUser.staffRole === "organizer"
+        : currentUser.role === "organizer";
+
       document.getElementById("profileName").textContent = displayName;
       document.getElementById("profileAvatar").textContent = displayName.charAt(0).toUpperCase();
-      document.getElementById("profileSnippet").title = `Signed in as ${user.email || displayName}`;
+      document.getElementById("profileSnippet").title = `Signed in as ${currentUser.email || displayName}`;
       document.getElementById("qrHolderName").textContent = displayName;
     }
 
+    /* Role-gated Organizer QR Generator UI */
+    const generateQrBtn = document.getElementById("generateQrBtn");
+    const organizerControls = document.getElementById("organizerControls");
+    const qrRoleTag = document.getElementById("qrRoleTag");
+    const qrSubtitle = document.getElementById("qrSubtitle");
+    const qrEventSelect = document.getElementById("qrEventSelect");
+    const qrEventLabel = document.getElementById("qrEventLabel");
+
+    if (isOrganizer) {
+      generateQrBtn.style.display = "inline-flex";
+      generateQrBtn.style.alignItems = "center";
+      generateQrBtn.style.justifyContent = "center";
+      organizerControls.style.display = "flex";
+      qrRoleTag.textContent = "Organizer Access";
+      qrRoleTag.className = "status-pill is-done";
+      qrSubtitle.textContent = "Generate a unique, scannable check-in QR code for any active event.";
+    } else if (currentUser.staffRole === "volunteer") {
+      qrRoleTag.textContent = "Volunteer Pass";
+    } else {
+      qrRoleTag.textContent = "Attendee Pass";
+    }
+
+    /* Real Scannable QR Code Renderer */
+    let qrCounter = 0;
+
+    function randomToken(len = 8) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const bytes = new Uint8Array(len);
+      if (window.crypto && window.crypto.getRandomValues) {
+        window.crypto.getRandomValues(bytes);
+      } else {
+        for (let i = 0; i < len; i++) bytes[i] = Math.floor(Math.random() * 256);
+      }
+      return Array.from(bytes, (b) => chars[b % chars.length]).join("");
+    }
+
+    function renderRealQR(isFreshClick = false) {
+      qrCounter += 1;
+      const eventName = isOrganizer && qrEventSelect ? qrEventSelect.value : "OJT Sprint Demo Day";
+      const codeNum = Math.floor(1000 + Math.random() * 9000);
+      const token = randomToken(8);
+      const passId = `#EP-2026-${codeNum}-${token.slice(0, 4)}`;
+      const issuedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+      const payload = JSON.stringify({
+        app: "EventPass",
+        passId: passId,
+        event: eventName,
+        issuedBy: currentUser.email || displayName,
+        role: currentUser.staffRole || currentUser.role,
+        nonce: `${token}-${Date.now()}-${qrCounter}`
+      });
+
+      const container = document.getElementById("qrCanvas");
+      container.innerHTML = "";
+
+      if (typeof window.QRCode === "function") {
+        new window.QRCode(container, {
+          text: payload,
+          width: 184,
+          height: 184,
+          colorDark: "#070b16",
+          colorLight: "#ffffff",
+          correctLevel: window.QRCode.CorrectLevel.M
+        });
+      } else {
+        const img = document.createElement("img");
+        img.width = 184;
+        img.height = 184;
+        img.alt = `QR Code for ${passId}`;
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=184x184&data=${encodeURIComponent(payload)}`;
+        container.appendChild(img);
+      }
+
+      document.getElementById("qrPassId").textContent = passId;
+      qrEventLabel.textContent = `Event: ${eventName}`;
+      document.getElementById("qrTimestamp").textContent = isFreshClick
+        ? `New QR generated at ${issuedAt}`
+        : `Active token issued at ${issuedAt}`;
+
+      if (isFreshClick) {
+        const frame = document.getElementById("qrFrame");
+        frame.classList.remove("is-pop");
+        void frame.offsetWidth;
+        frame.classList.add("is-pop");
+        setTimeout(() => frame.classList.remove("is-pop"), 220);
+      }
+    }
+
+    renderRealQR(false);
+
+    if (isOrganizer) {
+      generateQrBtn.addEventListener("click", () => renderRealQR(true));
+      qrEventSelect.addEventListener("change", () => renderRealQR(true));
+    }
+
+    /* Bottom Dock View Switcher */
     const dockButtons = document.querySelectorAll(".dock-btn");
     const viewPanes = {
       home: document.getElementById("view-home"),
@@ -759,11 +914,6 @@
     });
     document.getElementById("tabActive").addEventListener("click", () => renderAllEvents("active"));
     document.getElementById("tabPassive").addEventListener("click", () => renderAllEvents("passive"));
-
-    document.getElementById("refreshQrBtn").addEventListener("click", () => {
-      const code = Math.floor(1000 + Math.random() * 9000);
-      document.getElementById("qrPassId").textContent = `#EP-2026-${code}`;
-    });
 
     let notifications = [
       { title: "Ongoing Event: OJT Sprint Demo Day", time: "12m ago", body: "You have Gate Check-In & Presenter access at Innovation Lab.", unread: true },
