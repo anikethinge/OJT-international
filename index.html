@@ -478,12 +478,12 @@
       }
 
       localStorage.setItem("eventpass_user", JSON.stringify({ name: name || email.split("@")[0], email, role, mode: backendSynced ? "express-api" : "live-server-demo" }));
+      if (mode === "password") { window.location.replace("home.html"); return; }
       panel.classList.remove("is-squish"); void panel.offsetWidth; panel.classList.add("is-squish");
       document.getElementById("auth-view").style.display = "none";
       document.getElementById("done-view").style.display = "block";
-      document.getElementById("done-title").textContent = mode === "link" ? "Check your inbox" : "Welcome back";
-      document.getElementById("done-sub").innerHTML = mode === "link" ? `We sent a sign-in link to <strong>${email}</strong>.` : `Signed in as <strong>${email}</strong>`;
-      if (mode === "password") { setTimeout(() => { window.location.href = "home.html"; }, 850); }
+      document.getElementById("done-title").textContent = "Check your inbox";
+      document.getElementById("done-sub").innerHTML = `We sent a sign-in link to <strong>${email}</strong>.`;
       document.getElementById("done-badge").textContent = `${role === "organizer" ? "ORGANIZER HUB" : "ATTENDEE PASS"} • ${backendSynced ? "API CONNECTED" : "DEMO SESSION"}`;
     });
 
