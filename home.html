@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EventPass — Home</title>
+  <title>EventPass — Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='%23070d1c'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2338bdf8'/%3E%3Cellipse cx='32' cy='32' rx='21' ry='8.5' transform='rotate(-26 32 32)' stroke='%237dd3fc' stroke-width='2.4'/%3E%3Ccircle cx='48' cy='24' r='3' fill='%23ffffff'/%3E%3C/svg%3E" />
   <style>
     :root {
@@ -14,6 +14,8 @@
       --accent-2: #2563eb;
       --glass: rgba(255, 255, 255, 0.08);
       --border: rgba(255, 255, 255, 0.2);
+      --green: #34d399;
+      --amber: #fbbf24;
     }
     .lagoon { --bg: #05131c; --accent: #22d3ee; --accent-2: #0284c7; }
     * { box-sizing: border-box; }
@@ -36,7 +38,7 @@
     .aurora span:nth-child(2) { width: 380px; height: 380px; bottom: 10%; right: 12%; background: rgba(56, 189, 248, 0.42); }
     .aurora span:nth-child(3) { width: 300px; height: 300px; top: 45%; left: 45%; background: rgba(99, 102, 241, 0.35); }
 
-    .wrap { position: relative; z-index: 1; width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 22px; }
+    .wrap { position: relative; z-index: 1; width: 100%; max-width: 1020px; display: flex; flex-direction: column; gap: 22px; }
 
     nav {
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
@@ -45,49 +47,92 @@
       border: 1px solid var(--border);
     }
     .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: var(--accent); text-decoration: none; }
-    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    .nav-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .role-chip {
       padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
       background: rgba(56, 189, 248, 0.16); border: 1px solid rgba(56, 189, 248, 0.38); color: var(--accent);
       text-transform: uppercase;
     }
-    .btn-ghost, .btn-primary {
+    .btn-ghost, .btn-primary, .btn-viewall {
       padding: 8px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 600; cursor: pointer;
-      border: 1px solid var(--border); text-decoration: none;
+      border: 1px solid var(--border); text-decoration: none; transition: all 0.2s ease;
     }
     .btn-ghost { background: rgba(255, 255, 255, 0.06); color: var(--text); }
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.12); border-color: var(--accent); }
+    .btn-viewall {
+      background: rgba(56, 189, 248, 0.16); color: var(--accent); border-color: rgba(56, 189, 248, 0.45);
+    }
+    .btn-viewall:hover, .btn-viewall.is-open {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border-color: rgba(255, 255, 255, 0.35);
+    }
     .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border-color: rgba(255, 255, 255, 0.28); }
 
     .welcome-card {
-      padding: 32px 28px; border-radius: 28px;
+      padding: 28px; border-radius: 28px;
       background: var(--glass); backdrop-filter: blur(28px) saturate(170%); -webkit-backdrop-filter: blur(28px) saturate(170%);
       border: 1px solid var(--border); box-shadow: 0 28px 65px rgba(0, 0, 0, 0.45);
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
     }
-    .welcome-card h1 { margin: 0 0 6px; font-size: clamp(24px, 4vw, 34px); letter-spacing: -0.02em; }
+    .welcome-card h1 { margin: 0 0 6px; font-size: clamp(23px, 4vw, 32px); letter-spacing: -0.02em; }
     .welcome-card p { margin: 0; color: var(--muted); font-size: 14px; }
 
     .pass-ticket {
-      padding: 16px 20px; border-radius: 20px; min-width: 240px;
+      padding: 16px 20px; border-radius: 20px; min-width: 245px;
       background: rgba(7, 13, 28, 0.65); border: 1px solid rgba(125, 211, 252, 0.35);
       display: flex; align-items: center; gap: 14px;
     }
     .qr-box {
-      width: 56px; height: 56px; border-radius: 12px; background: #fff; padding: 6px;
+      width: 54px; height: 54px; border-radius: 12px; background: #fff; padding: 6px;
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; flex-shrink: 0;
     }
     .qr-box span { background: #070b16; border-radius: 2px; }
     .qr-box span:nth-child(2), .qr-box span:nth-child(5), .qr-box span:nth-child(8) { background: #2563eb; }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
+    .section-head {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+      padding: 0 4px;
+    }
+    .section-head h2 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+    .section-head p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+
+    .tabs {
+      display: inline-flex; gap: 6px; padding: 4px; border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .tab-btn {
+      padding: 7px 14px; border-radius: 10px; border: none; background: transparent;
+      color: var(--muted); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+    }
+    .tab-btn.is-active {
+      background: rgba(255, 255, 255, 0.16); color: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
     .card {
       padding: 22px; border-radius: 24px;
       background: var(--glass); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
       border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; gap: 14px;
     }
+    .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .tag { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
-    .card h3 { margin: 6px 0; font-size: 18px; }
+    .status-pill {
+      padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em;
+    }
+    .status-pill.is-done { background: rgba(52, 211, 153, 0.16); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.35); }
+    .status-pill.is-assigned { background: rgba(56, 189, 248, 0.16); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.35); }
+    .status-pill.is-active { background: rgba(52, 211, 153, 0.16); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.35); }
+    .status-pill.is-passive { background: rgba(251, 191, 36, 0.14); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.35); }
+
+    .card h3 { margin: 8px 0 6px; font-size: 18px; }
     .card p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+    .meta-row { font-size: 12px; color: rgba(248, 250, 252, 0.78); padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+
+    .all-events-drawer {
+      display: none; flex-direction: column; gap: 18px; padding: 24px; border-radius: 28px;
+      background: rgba(10, 17, 34, 0.78); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(56, 189, 248, 0.32); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    }
+    .all-events-drawer.is-open { display: flex; }
 
     footer {
       width: 100%; padding: 14px 20px; border-radius: 20px;
@@ -114,6 +159,7 @@
       </a>
       <div class="nav-actions">
         <span id="roleBadge" class="role-chip">Attendee Pass</span>
+        <button id="viewAllBtn" type="button" class="btn-viewall">View All</button>
         <button id="themeBtn" type="button" class="btn-ghost">Theme: Dusk</button>
         <button id="logoutBtn" type="button" class="btn-primary">Sign Out</button>
       </div>
@@ -122,7 +168,7 @@
     <section class="welcome-card">
       <div>
         <h1 id="welcomeTitle">Welcome back!</h1>
-        <p id="welcomeSub">Your digital campus passes and check-in tools are ready.</p>
+        <p id="welcomeSub">Track your assigned passes, completed events, and live campus check-ins.</p>
       </div>
       <div class="pass-ticket">
         <div class="qr-box" aria-hidden="true">
@@ -138,33 +184,36 @@
       </div>
     </section>
 
-    <section id="eventsGrid" class="grid">
-      <article class="card">
+    <section id="allEventsDrawer" class="all-events-drawer" aria-label="All Events Directory">
+      <div class="section-head">
         <div>
-          <div class="tag">Nov 30 • Main Auditorium</div>
-          <h3>Constellation Tech Summit 2026</h3>
-          <p>Polaris School of Technology flagship showcase for Applied AI, Cloud &amp; Product tracks.</p>
+          <h2>All Events Directory</h2>
+          <p>Switch between live Active Events and archived Passive Events.</p>
         </div>
-        <button type="button" class="btn-primary claim-btn">Claim Entry Pass</button>
-      </article>
+        <div class="nav-actions">
+          <div class="tabs" role="tablist">
+            <button id="tabActive" type="button" class="tab-btn is-active" role="tab" aria-selected="true">Active Events</button>
+            <button id="tabPassive" type="button" class="tab-btn" role="tab" aria-selected="false">Passive Events</button>
+          </div>
+          <button id="closeAllBtn" type="button" class="btn-ghost">Close</button>
+        </div>
+      </div>
+      <div id="allEventsGrid" class="grid"></div>
+    </section>
 
-      <article class="card">
+    <section style="display:flex;flex-direction:column;gap:14px;">
+      <div class="section-head">
         <div>
-          <div class="tag">Dec 04 • Innovation Lab</div>
-          <h3>OJT Sprint Demo Day</h3>
-          <p>Live full-stack architecture and UI engineering evaluations with faculty mentors.</p>
+          <h2>Your Events</h2>
+          <p>Events you have completed or been assigned to.</p>
         </div>
-        <button type="button" class="btn-primary claim-btn">Claim Entry Pass</button>
-      </article>
-
-      <article class="card">
-        <div>
-          <div class="tag">Dec 09 • Open Arena</div>
-          <h3>Bengaluru Student Hackathon</h3>
-          <p>24-hour rapid build sprint with instant QR gate check-in and team pass sync.</p>
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab-btn is-active" data-your-filter="all">All (4)</button>
+          <button type="button" class="tab-btn" data-your-filter="assigned">Assigned (2)</button>
+          <button type="button" class="tab-btn" data-your-filter="done">Completed (2)</button>
         </div>
-        <button type="button" class="btn-primary claim-btn">Claim Entry Pass</button>
-      </article>
+      </div>
+      <div id="yourEventsGrid" class="grid"></div>
     </section>
 
     <footer>
@@ -181,26 +230,170 @@
 
   <script>
     const raw = localStorage.getItem("eventpass_user");
+    let user = { name: "Aniket Hinge", email: "aniket@polaris.edu", role: "attendee" };
     if (!raw) {
       window.location.href = "index.html";
     } else {
-      const user = JSON.parse(raw);
+      user = JSON.parse(raw);
       document.getElementById("welcomeTitle").textContent = `Welcome back, ${user.name || "Explorer"}!`;
       document.getElementById("userEmail").textContent = user.email || "";
       const isOrg = user.role === "organizer";
       document.getElementById("roleBadge").textContent = isOrg ? "Organizer Hub" : "Attendee Pass";
       if (isOrg) {
-        document.getElementById("welcomeSub").textContent = "Organizer Hub active — manage live check-ins, attendee rosters, and event passes.";
-        document.querySelectorAll(".claim-btn").forEach((b) => { b.textContent = "Manage Check-In Roster"; });
+        document.getElementById("welcomeSub").textContent = "Organizer Hub active — inspect assigned event rosters, completed sessions, and active/passive event catalogs.";
       }
     }
 
-    document.querySelectorAll(".claim-btn").forEach((btn) => {
+    const YOUR_EVENTS = [
+      {
+        title: "OJT Sprint Demo Day",
+        date: "Nov 30, 2026 • Innovation Lab",
+        status: "assigned",
+        badge: "Assigned",
+        roleNote: "Pass #EP-9021 • Gate Check-In Assigned",
+        desc: "Live full-stack architecture and Liquid Glass UI evaluation with faculty mentors."
+      },
+      {
+        title: "Bengaluru Student Hackathon",
+        date: "Dec 09, 2026 • Open Arena",
+        status: "assigned",
+        badge: "Assigned",
+        roleNote: "Pass #EP-9144 • Team Squad Lead",
+        desc: "24-hour rapid build sprint with instant QR gate verification and live roster sync."
+      },
+      {
+        title: "Constellation 2026 Campus Launch",
+        date: "Aug 24, 2026 • Main Auditorium",
+        status: "done",
+        badge: "Completed",
+        roleNote: "Checked in at 09:42 AM • Verified",
+        desc: "Polaris School of Technology orientation showcase and AI photo pass distribution."
+      },
+      {
+        title: "Cloud & Applied AI Track Workshop",
+        date: "Oct 15, 2026 • Seminar Hall B",
+        status: "done",
+        badge: "Completed",
+        roleNote: "Attendance Logged • Certificate Issued",
+        desc: "Hands-on deployment lab covering cloud runtimes, API authentication, and telemetry."
+      }
+    ];
+
+    const ALL_EVENTS = {
+      active: [
+        {
+          title: "OJT Sprint Demo Day",
+          date: "Nov 30, 2026 • Innovation Lab",
+          badge: "Active",
+          meta: "142 Passes Issued • Live Check-In Open",
+          desc: "Currently open for student presenters and faculty evaluators."
+        },
+        {
+          title: "Bengaluru Student Hackathon",
+          date: "Dec 09, 2026 • Open Arena",
+          badge: "Active",
+          meta: "310 Registered • Registration Live",
+          desc: "Active campus hackathon accepting team pass claims and organizer check-ins."
+        },
+        {
+          title: "Winter Open-Source Code Sprint",
+          date: "Dec 18, 2026 • Tech Hub",
+          badge: "Active",
+          meta: "88 Passes Available • Open Now",
+          desc: "Collaborative pull-request sprint and mentor code review session."
+        }
+      ],
+      passive: [
+        {
+          title: "Constellation 2026 Campus Launch",
+          date: "Aug 24, 2026 • Main Auditorium",
+          badge: "Passive",
+          meta: "Archived • 480 Total Check-Ins",
+          desc: "Concluded campus flagship event; pass scanning and edits are closed."
+        },
+        {
+          title: "Cloud & Applied AI Track Workshop",
+          date: "Oct 15, 2026 • Seminar Hall B",
+          badge: "Passive",
+          meta: "Archived • 195 Total Check-Ins",
+          desc: "Completed specialization workshop stored in historical attendance logs."
+        },
+        {
+          title: "Freshers Induction & Club Fair",
+          date: "Sep 05, 2026 • Central Courtyard",
+          badge: "Passive",
+          meta: "Archived • 520 Total Check-Ins",
+          desc: "Past campus induction event retained for audit and OJT reporting."
+        }
+      ]
+    };
+
+    function renderYourEvents(filter = "all") {
+      const grid = document.getElementById("yourEventsGrid");
+      const list = filter === "all" ? YOUR_EVENTS : YOUR_EVENTS.filter((e) => e.status === filter);
+      grid.innerHTML = list.map((ev) => `
+        <article class="card">
+          <div>
+            <div class="card-top">
+              <span class="tag">${ev.date}</span>
+              <span class="status-pill ${ev.status === "done" ? "is-done" : "is-assigned"}">${ev.badge}</span>
+            </div>
+            <h3>${ev.title}</h3>
+            <p>${ev.desc}</p>
+          </div>
+          <div class="meta-row">${ev.roleNote}</div>
+        </article>
+      `).join("");
+    }
+
+    let currentCatalogTab = "active";
+    function renderAllEvents(tab = "active") {
+      currentCatalogTab = tab;
+      document.getElementById("tabActive").classList.toggle("is-active", tab === "active");
+      document.getElementById("tabActive").setAttribute("aria-selected", String(tab === "active"));
+      document.getElementById("tabPassive").classList.toggle("is-active", tab === "passive");
+      document.getElementById("tabPassive").setAttribute("aria-selected", String(tab === "passive"));
+
+      const grid = document.getElementById("allEventsGrid");
+      grid.innerHTML = ALL_EVENTS[tab].map((ev) => `
+        <article class="card">
+          <div>
+            <div class="card-top">
+              <span class="tag">${ev.date}</span>
+              <span class="status-pill ${tab === "active" ? "is-active" : "is-passive"}">${ev.badge}</span>
+            </div>
+            <h3>${ev.title}</h3>
+            <p>${ev.desc}</p>
+          </div>
+          <div class="meta-row">${ev.meta}</div>
+        </article>
+      `).join("");
+    }
+
+    renderYourEvents("all");
+    renderAllEvents("active");
+
+    document.querySelectorAll("[data-your-filter]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        btn.textContent = "✓ Pass Active";
-        btn.style.opacity = "0.8";
+        document.querySelectorAll("[data-your-filter]").forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        renderYourEvents(btn.dataset.yourFilter);
       });
     });
+
+    const drawer = document.getElementById("allEventsDrawer");
+    const viewAllBtn = document.getElementById("viewAllBtn");
+    viewAllBtn.addEventListener("click", () => {
+      const open = drawer.classList.toggle("is-open");
+      viewAllBtn.classList.toggle("is-open", open);
+      if (open) drawer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    document.getElementById("closeAllBtn").addEventListener("click", () => {
+      drawer.classList.remove("is-open");
+      viewAllBtn.classList.remove("is-open");
+    });
+    document.getElementById("tabActive").addEventListener("click", () => renderAllEvents("active"));
+    document.getElementById("tabPassive").addEventListener("click", () => renderAllEvents("passive"));
 
     document.getElementById("themeBtn").addEventListener("click", (e) => {
       const isLagoon = document.body.classList.toggle("lagoon");
