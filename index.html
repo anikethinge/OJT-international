@@ -186,6 +186,12 @@
       .lgs__title { font-size: 22px; }
       .lgs__footer { padding: 12px 14px; font-size: 11px; }
     }
+
+    /* Mobile Button Vibe */
+    button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, background 0.2s ease; }
+    button:active { transform: scale(0.95); }
+    .lgs__pill-btn, .lgs__role-btn, .lgs__mode, .lgs__submit { border-radius: 16px; min-height: 44px; font-weight: 700; }
+    .lgs__submit { border-radius: 18px; min-height: 50px; font-size: 16px; box-shadow: 0 12px 28px rgba(37, 99, 235, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
   </style>
 </head>
 <body>
