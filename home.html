@@ -6,6 +6,7 @@
   <title>EventPass — Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='%23070d1c'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2338bdf8'/%3E%3Cellipse cx='32' cy='32' rx='21' ry='8.5' transform='rotate(-26 32 32)' stroke='%237dd3fc' stroke-width='2.4'/%3E%3Ccircle cx='48' cy='24' r='3' fill='%23ffffff'/%3E%3C/svg%3E" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <style>
     :root {
       --bg: #070b16;
@@ -17,6 +18,7 @@
       --border: rgba(255, 255, 255, 0.2);
       --green: #34d399;
       --amber: #fbbf24;
+      --danger: #fb7185;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
@@ -234,9 +236,9 @@
     }
     .all-events-drawer.is-open { display: flex; }
 
-    /* QR View */
+    /* QR View (Generator & Attendee Camera Scanner) */
     .qr-panel {
-      max-width: 420px;
+      max-width: 440px;
       width: 100%;
       margin: 0 auto;
       padding: 24px;
@@ -298,9 +300,74 @@
       font-weight: 700;
       box-shadow: 0 10px 24px rgba(37, 99, 235, 0.38);
     }
-    .qr-meta {
-      font-size: 11.5px;
+    .qr-meta { font-size: 11.5px; color: var(--muted); }
+
+    /* Attendee Live Camera Scanner */
+    .scanner-stage {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 1 / 1;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #030712;
+      border: 2px solid rgba(56, 189, 248, 0.45);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .scanner-stage video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .scanner-reticle {
+      position: absolute;
+      inset: 18%;
+      border: 2px solid rgba(56, 189, 248, 0.85);
+      border-radius: 16px;
+      box-shadow: 0 0 0 999px rgba(4, 9, 20, 0.35);
+      pointer-events: none;
+    }
+    .scanner-line {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+      box-shadow: 0 0 12px #38bdf8;
+      animation: scanSweep 2.1s ease-in-out infinite;
+    }
+    @keyframes scanSweep {
+      0%, 100% { top: 8%; }
+      50% { top: 90%; }
+    }
+    .scan-status {
+      font-size: 13px;
+      font-weight: 600;
       color: var(--muted);
+    }
+    .scan-status.is-error { color: var(--danger); }
+    .scan-result {
+      display: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(52, 211, 153, 0.14);
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .scan-result.is-show { display: block; }
+    .scanner-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
     }
 
     /* Notifications View */
@@ -522,12 +589,31 @@
     <section id="view-qr" class="view-pane" aria-label="QR Code">
       <div class="section-head">
         <div>
-          <h2>EventPass QR Code</h2>
+          <h2 id="qrHeading">EventPass QR Code</h2>
           <p id="qrSubtitle">Present this scannable pass at the venue gate for check-in.</p>
         </div>
-        <span id="qrRoleTag" class="status-pill is-assigned">Attendee Pass</span>
+        <span id="qrRoleTag" class="status-pill is-assigned">Attendee</span>
       </div>
-      <div class="qr-panel">
+
+      <!-- ATTENDEE-ONLY: Live Camera QR Scanner -->
+      <div id="attendeeScannerPanel" class="qr-panel" style="display:none;">
+        <div class="scanner-stage">
+          <video id="qrVideo" playsinline autoplay muted></video>
+          <div class="scanner-reticle" aria-hidden="true">
+            <div class="scanner-line"></div>
+          </div>
+        </div>
+        <canvas id="qrScanCanvas" style="display:none;"></canvas>
+        <div id="scanStatus" class="scan-status">Requesting camera permission...</div>
+        <div id="scanResult" class="scan-result" role="status"></div>
+        <div class="scanner-actions">
+          <button id="startScanBtn" type="button" class="btn-primary">Open Camera</button>
+          <button id="stopScanBtn" type="button" class="btn-ghost" style="display:none;">Stop Camera</button>
+        </div>
+      </div>
+
+      <!-- ORGANIZER / VOLUNTEER: QR Code Display & Organizer Generator -->
+      <div id="staffQrPanel" class="qr-panel" style="display:none;">
         <div id="organizerControls" style="display:none;width:100%;flex-direction:column;align-items:center;gap:10px;">
           <select id="qrEventSelect" class="qr-select" aria-label="Select event for QR code">
             <option value="OJT Sprint Demo Day">OJT Sprint Demo Day • Innovation Lab</option>
@@ -626,6 +712,7 @@
     const raw = localStorage.getItem("eventpass_user");
     let currentUser = { name: "Aniket", email: "aniket@polaris.edu", role: "attendee", staffRole: "attendee" };
     let displayName = "Aniket";
+    let isAttendee = true;
     let isOrganizer = false;
 
     if (!raw) {
@@ -633,9 +720,9 @@
     } else {
       currentUser = JSON.parse(raw);
       displayName = (currentUser.name || currentUser.email || "User").trim();
-      isOrganizer = currentUser.staffRole
-        ? currentUser.staffRole === "organizer"
-        : currentUser.role === "organizer";
+      const effectiveRole = currentUser.staffRole || currentUser.role || "attendee";
+      isAttendee = effectiveRole === "attendee";
+      isOrganizer = effectiveRole === "organizer";
 
       document.getElementById("profileName").textContent = displayName;
       document.getElementById("profileAvatar").textContent = displayName.charAt(0).toUpperCase();
@@ -643,29 +730,147 @@
       document.getElementById("qrHolderName").textContent = displayName;
     }
 
-    /* Role-gated Organizer QR Generator UI */
+    /* Role-gated QR View Setup */
+    const attendeeScannerPanel = document.getElementById("attendeeScannerPanel");
+    const staffQrPanel = document.getElementById("staffQrPanel");
     const generateQrBtn = document.getElementById("generateQrBtn");
     const organizerControls = document.getElementById("organizerControls");
+    const qrHeading = document.getElementById("qrHeading");
     const qrRoleTag = document.getElementById("qrRoleTag");
     const qrSubtitle = document.getElementById("qrSubtitle");
     const qrEventSelect = document.getElementById("qrEventSelect");
     const qrEventLabel = document.getElementById("qrEventLabel");
 
-    if (isOrganizer) {
-      generateQrBtn.style.display = "inline-flex";
-      generateQrBtn.style.alignItems = "center";
-      generateQrBtn.style.justifyContent = "center";
-      organizerControls.style.display = "flex";
-      qrRoleTag.textContent = "Organizer Access";
-      qrRoleTag.className = "status-pill is-done";
-      qrSubtitle.textContent = "Generate a unique, scannable check-in QR code for any active event.";
-    } else if (currentUser.staffRole === "volunteer") {
-      qrRoleTag.textContent = "Volunteer Pass";
+    if (isAttendee) {
+      attendeeScannerPanel.style.display = "flex";
+      staffQrPanel.style.display = "none";
+      qrHeading.textContent = "Scan Event QR Code";
+      qrSubtitle.textContent = "Point your camera at the Organizer QR code to check in.";
+      qrRoleTag.textContent = "Attendee Scanner";
+      qrRoleTag.className = "status-pill is-assigned";
     } else {
-      qrRoleTag.textContent = "Attendee Pass";
+      attendeeScannerPanel.style.display = "none";
+      staffQrPanel.style.display = "flex";
+      if (isOrganizer) {
+        generateQrBtn.style.display = "inline-flex";
+        generateQrBtn.style.alignItems = "center";
+        generateQrBtn.style.justifyContent = "center";
+        organizerControls.style.display = "flex";
+        qrRoleTag.textContent = "Organizer Access";
+        qrRoleTag.className = "status-pill is-done";
+        qrSubtitle.textContent = "Generate a unique, scannable check-in QR code for any active event.";
+      } else {
+        qrRoleTag.textContent = "Volunteer Pass";
+      }
     }
 
-    /* Real Scannable QR Code Renderer */
+    /* ATTENDEE-ONLY Camera QR Scanner */
+    let cameraStream = null;
+    let scanRafId = null;
+    const qrVideo = document.getElementById("qrVideo");
+    const qrScanCanvas = document.getElementById("qrScanCanvas");
+    const scanCtx = qrScanCanvas.getContext("2d", { willReadFrequently: true });
+    const scanStatus = document.getElementById("scanStatus");
+    const scanResult = document.getElementById("scanResult");
+    const startScanBtn = document.getElementById("startScanBtn");
+    const stopScanBtn = document.getElementById("stopScanBtn");
+
+    function stopScanner() {
+      if (scanRafId) {
+        cancelAnimationFrame(scanRafId);
+        scanRafId = null;
+      }
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+        cameraStream = null;
+      }
+      qrVideo.srcObject = null;
+      stopScanBtn.style.display = "none";
+      startScanBtn.textContent = "Open Camera";
+    }
+
+    function showScannedPayload(rawText) {
+      stopScanner();
+      scanStatus.classList.remove("is-error");
+      scanStatus.textContent = "QR code scanned successfully!";
+      let html = "";
+      try {
+        const parsed = JSON.parse(rawText);
+        html = `<strong style="color:var(--green);">Check-In Verified</strong><br/>` +
+               `Event: <strong>${String(parsed.event || "EventPass Event").replace(/</g, "&lt;")}</strong><br/>` +
+               `Pass ID: <code>${String(parsed.passId || "Verified").replace(/</g, "&lt;")}</code>`;
+      } catch {
+        html = `<strong style="color:var(--green);">QR Scanned</strong><br/>${String(rawText).replace(/</g, "&lt;")}`;
+      }
+      scanResult.innerHTML = html;
+      scanResult.classList.add("is-show");
+      startScanBtn.textContent = "Scan Another QR";
+    }
+
+    function scanLoop() {
+      if (!cameraStream) return;
+      if (qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
+        qrScanCanvas.width = qrVideo.videoWidth;
+        qrScanCanvas.height = qrVideo.videoHeight;
+        scanCtx.drawImage(qrVideo, 0, 0, qrScanCanvas.width, qrScanCanvas.height);
+        if (typeof window.jsQR === "function") {
+          const imgData = scanCtx.getImageData(0, 0, qrScanCanvas.width, qrScanCanvas.height);
+          const decoded = window.jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
+          if (decoded && decoded.data) {
+            showScannedPayload(decoded.data);
+            return;
+          }
+        }
+      }
+      scanRafId = requestAnimationFrame(scanLoop);
+    }
+
+    async function startScanner() {
+      if (!isAttendee) return;
+      stopScanner();
+      scanResult.classList.remove("is-show");
+      scanStatus.classList.remove("is-error");
+      scanStatus.textContent = "Requesting camera permission...";
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        scanStatus.classList.add("is-error");
+        scanStatus.textContent = "Camera access requires HTTPS or a supported mobile/desktop browser.";
+        return;
+      }
+
+      try {
+        try {
+          cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" } },
+            audio: false
+          });
+        } catch {
+          cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        }
+
+        qrVideo.srcObject = cameraStream;
+        await qrVideo.play();
+        scanStatus.textContent = "Camera live — align the QR code inside the frame.";
+        stopScanBtn.style.display = "inline-block";
+        startScanBtn.textContent = "Restart Camera";
+        scanRafId = requestAnimationFrame(scanLoop);
+      } catch (err) {
+        scanStatus.classList.add("is-error");
+        scanStatus.textContent = err && err.name === "NotAllowedError"
+          ? "Camera permission denied. Allow camera access in browser settings and tap Open Camera."
+          : "Unable to open camera. Check device permissions and tap Open Camera.";
+      }
+    }
+
+    if (isAttendee) {
+      startScanBtn.addEventListener("click", startScanner);
+      stopScanBtn.addEventListener("click", () => {
+        stopScanner();
+        scanStatus.textContent = "Camera stopped. Tap Open Camera to scan again.";
+      });
+    }
+
+    /* ORGANIZER / VOLUNTEER Real Scannable QR Code Renderer */
     let qrCounter = 0;
 
     function randomToken(len = 8) {
@@ -680,6 +885,7 @@
     }
 
     function renderRealQR(isFreshClick = false) {
+      if (isAttendee) return;
       qrCounter += 1;
       const eventName = isOrganizer && qrEventSelect ? qrEventSelect.value : "OJT Sprint Demo Day";
       const codeNum = Math.floor(1000 + Math.random() * 9000);
@@ -732,7 +938,9 @@
       }
     }
 
-    renderRealQR(false);
+    if (!isAttendee) {
+      renderRealQR(false);
+    }
 
     if (isOrganizer) {
       generateQrBtn.addEventListener("click", () => renderRealQR(true));
@@ -760,6 +968,13 @@
         else btn.removeAttribute("aria-current");
       });
       viewAllBtn.style.display = target === "home" ? "inline-block" : "none";
+
+      if (target === "qr" && isAttendee) {
+        startScanner();
+      } else {
+        stopScanner();
+      }
+
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -971,6 +1186,7 @@
     });
 
     document.getElementById("logoutBtn").addEventListener("click", () => {
+      stopScanner();
       localStorage.removeItem("eventpass_user");
       localStorage.removeItem("eventpass_token");
       window.location.href = "index.html";
