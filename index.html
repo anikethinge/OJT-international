@@ -470,21 +470,14 @@
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showError("That email looks incomplete — check for a missing @ or domain.");
       if (mode === "password" && password.length < 6) return showError("Password must be at least 6 characters.");
-      if (role === "organizer" && !/^\d{4}$/.test(pin)) return showError("Enter a valid 4-digit Enter PIN.");
-
-      renderRoll(isSignUp ? "Creating…" : mode === "password" ? "Signing in…" : "Sending…");
-      let backendSynced = false;
-      try {
-        if (mode === "password") {
-          const endpoint = isSignUp ? "/api/auth/register" : "/api/auth/login";
-          const res = await fetch(`${API_BASE}${endpoint}`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: name || email.split("@")[0], email, password, role, organizerPin: role === "organizer" ? pin : undefined })
-          });
-          const data = await res.json();
-          if (!res.ok || data.error) throw new Error(data.error || "Authentication failed.");
-          if (data.token) localStorage.setItem("eventpass_token", data.token);
-          backendSynced = true;
+      if (role === "organizer") {
+        const pinInput = document.getElementById("org-pin") || document.getElementById("pin-input") || document.querySelector("input[id*=pin]");
+        const pin = pinInput ? pinInput.value.trim() : "";
+        if (pin !== "1234" && pin !== "9999") {
+          const errEl = document.getElementById("pin-error") || document.getElementById("form-error");
+          if (errEl) { errEl.textContent = "Invalid PIN."; errEl.style.display = "block"; }
+          if (pinInput) pinInput.focus();
+          return;
         }
       } catch (err) {
         if (!(err instanceof TypeError)) { renderRoll(isSignUp ? "Create account" : "Sign in"); return showError(err.message); }
