@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>EventPass — Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='%23070d1c'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2338bdf8'/%3E%3Cellipse cx='32' cy='32' rx='21' ry='8.5' transform='rotate(-26 32 32)' stroke='%237dd3fc' stroke-width='2.4'/%3E%3Ccircle cx='48' cy='24' r='3' fill='%23ffffff'/%3E%3C/svg%3E" />
   <style>
     :root {
-      --bg: #060a14;
+      --bg: #070b16;
       --text: #f8fafc;
-      --muted: rgba(248, 250, 252, 0.65);
+      --muted: rgba(248, 250, 252, 0.68);
       --accent: #38bdf8;
       --accent-2: #2563eb;
       --glass: rgba(255, 255, 255, 0.08);
-      --border: rgba(255, 255, 255, 0.18);
+      --border: rgba(255, 255, 255, 0.2);
       --green: #34d399;
       --amber: #fbbf24;
     }
@@ -23,93 +23,70 @@
       min-height: 100dvh;
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: max(12px, env(safe-area-inset-top)) 14px calc(92px + env(safe-area-inset-bottom));
-      gap: 16px;
+      padding: max(18px, env(safe-area-inset-top)) 16px calc(92px + env(safe-area-inset-bottom));
+      gap: 20px;
       overflow-x: hidden;
     }
     .aurora { position: fixed; inset: -15%; pointer-events: none; filter: blur(85px); opacity: 0.72; z-index: 0; }
     .aurora span { position: absolute; border-radius: 50%; }
-    .aurora span:nth-child(1) { width: 320px; height: 320px; top: 2%; left: 4%; background: rgba(37, 99, 235, 0.55); }
-    .aurora span:nth-child(2) { width: 300px; height: 300px; bottom: 10%; right: 6%; background: rgba(56, 189, 248, 0.45); }
-    .aurora span:nth-child(3) { width: 240px; height: 240px; top: 44%; left: 38%; background: rgba(99, 102, 241, 0.35); }
+    .aurora span:nth-child(1) { width: 420px; height: 420px; top: 6%; left: 10%; background: rgba(37, 99, 235, 0.52); }
+    .aurora span:nth-child(2) { width: 380px; height: 380px; bottom: 10%; right: 12%; background: rgba(56, 189, 248, 0.42); }
+    .aurora span:nth-child(3) { width: 300px; height: 300px; top: 45%; left: 45%; background: rgba(99, 102, 241, 0.35); }
 
-    .wrap { position: relative; z-index: 1; width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 16px; }
+    .wrap { position: relative; z-index: 1; width: 100%; max-width: 1020px; display: flex; flex-direction: column; gap: 20px; }
 
-    /* Tactile Native Mobile Buttons */
     button {
       font-family: inherit;
-      touch-action: manipulation;
-      user-select: none;
-      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    button:active {
-      transform: scale(0.95);
-    }
+    button:active { transform: scale(0.96); }
 
-    /* Compact Native App Top Bar */
     nav.top-nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px 18px;
       border-radius: 22px;
-      background: rgba(15, 23, 42, 0.72);
-      backdrop-filter: blur(26px) saturate(180%);
-      -webkit-backdrop-filter: blur(26px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      background: var(--glass);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
     }
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 800;
-      font-size: 15px;
-      letter-spacing: -0.02em;
-      color: #fff;
-      text-decoration: none;
-      flex-shrink: 0;
-    }
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-    }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: var(--accent); text-decoration: none; }
+    .nav-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
     .profile-pill {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      height: 38px;
-      padding: 4px 10px 4px 5px;
+      gap: 8px;
+      padding: 5px 12px 5px 6px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.07);
       border: 1px solid rgba(255, 255, 255, 0.16);
-      max-width: 128px;
+      max-width: 170px;
     }
     .avatar {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #22d3ee, #2563eb);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
       color: #fff;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       display: grid;
       place-items: center;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.45);
     }
-    .profile-meta { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+    .profile-meta { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
     .profile-name {
-      font-size: 11.5px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 600;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
@@ -118,9 +95,9 @@
     .profile-status {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 9.5px;
-      font-weight: 700;
+      gap: 5px;
+      font-size: 10.5px;
+      font-weight: 600;
       color: var(--green);
     }
     .status-dot {
@@ -132,224 +109,163 @@
       flex-shrink: 0;
     }
 
+    .btn-ghost, .btn-primary, .btn-viewall {
+      min-height: 36px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-ghost { background: rgba(255, 255, 255, 0.06); color: var(--text); }
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.12); border-color: var(--accent); }
     .btn-viewall {
-      height: 38px;
-      padding: 0 13px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      cursor: pointer;
-      color: #e0f2fe;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.24), rgba(37, 99, 235, 0.28));
-      border: 1px solid rgba(125, 211, 252, 0.45);
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-      white-space: nowrap;
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--accent);
+      border-color: rgba(56, 189, 248, 0.45);
     }
-    .btn-viewall.is-open {
-      background: linear-gradient(135deg, #38bdf8, #2563eb);
+    .btn-viewall:hover, .btn-viewall.is-open {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
       color: #fff;
-      border-color: rgba(255, 255, 255, 0.4);
-      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+      border-color: rgba(255, 255, 255, 0.35);
     }
-
-    .btn-signout {
-      height: 38px;
-      padding: 0 13px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
       color: #fff;
-      background: linear-gradient(135deg, #38bdf8, #2563eb);
-      border: 1px solid rgba(255, 255, 255, 0.32);
-      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-      white-space: nowrap;
+      border-color: rgba(255, 255, 255, 0.28);
     }
 
-    .btn-ghost {
-      height: 38px;
-      padding: 0 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      white-space: nowrap;
-    }
-
-    /* Views */
-    .view-pane {
-      display: none;
-      flex-direction: column;
-      gap: 16px;
-      animation: paneIn 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-    }
+    .view-pane { display: none; flex-direction: column; gap: 18px; }
     .view-pane.is-active { display: flex; }
-    @keyframes paneIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
 
     .section-head {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 0 2px;
-    }
-    .section-head-row {
-      display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 0 4px;
     }
-    .section-head h2 { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+    .section-head h2 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
     .section-head p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
 
-    /* iOS Segmented Control Tabs */
-    .segmented {
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
-      padding: 5px;
-      border-radius: 16px;
-      background: rgba(15, 23, 42, 0.72);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
+    .tabs {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
-    .segmented--2 { grid-template-columns: repeat(2, 1fr); }
-    .seg-btn {
-      height: 38px;
-      border-radius: 12px;
-      border: 1px solid transparent;
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      min-height: 34px;
+      padding: 7px 14px;
+      border-radius: 10px;
+      border: none;
       background: transparent;
       color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 12.5px;
+      font-weight: 600;
+      white-space: nowrap;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-    .seg-btn.is-active {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(37, 99, 235, 0.34));
-      border-color: rgba(125, 211, 252, 0.45);
+    .tab-btn.is-active {
+      background: rgba(255, 255, 255, 0.16);
       color: #fff;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
     }
 
-    /* Event Cards */
     .grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    @media (min-width: 640px) {
-      .grid { grid-template-columns: repeat(2, 1fr); }
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
     }
     .card {
-      padding: 18px;
+      padding: 20px;
       border-radius: 24px;
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      background: var(--glass);
       backdrop-filter: blur(22px);
       -webkit-backdrop-filter: blur(22px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
     }
     .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .tag { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
     .status-pill {
-      padding: 4px 10px;
+      padding: 3px 9px;
       border-radius: 999px;
       font-size: 10.5px;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: 0.03em;
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .status-pill.is-done { background: rgba(52, 211, 153, 0.18); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.4); }
-    .status-pill.is-assigned { background: rgba(56, 189, 248, 0.18); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.4); }
-    .status-pill.is-active { background: rgba(52, 211, 153, 0.18); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.4); }
-    .status-pill.is-passive { background: rgba(251, 191, 36, 0.16); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.4); }
+    .status-pill.is-done { background: rgba(52, 211, 153, 0.16); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.35); }
+    .status-pill.is-assigned { background: rgba(56, 189, 248, 0.16); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.35); }
+    .status-pill.is-active { background: rgba(52, 211, 153, 0.16); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.35); }
+    .status-pill.is-passive { background: rgba(251, 191, 36, 0.14); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.35); }
 
-    .card h3 { margin: 6px 0; font-size: 17px; font-weight: 700; line-height: 1.3; }
+    .card h3 { margin: 8px 0 6px; font-size: 18px; }
     .card p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
-    .meta-row { font-size: 12px; font-weight: 600; color: rgba(248, 250, 252, 0.84); padding-top: 9px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+    .meta-row { font-size: 12px; color: rgba(248, 250, 252, 0.78); padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
 
-    /* View All Drawer */
     .all-events-drawer {
       display: none;
       flex-direction: column;
-      gap: 14px;
-      padding: 16px;
+      gap: 16px;
+      padding: 20px;
       border-radius: 26px;
-      background: rgba(10, 17, 34, 0.85);
+      background: rgba(10, 17, 34, 0.82);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
-      border: 1px solid rgba(56, 189, 248, 0.38);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(56, 189, 248, 0.34);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
     }
     .all-events-drawer.is-open { display: flex; }
 
-    /* QR Code View */
+    /* QR View */
     .qr-panel {
+      max-width: 420px;
       width: 100%;
-      padding: 26px 20px;
-      border-radius: 28px;
+      margin: 0 auto;
+      padding: 24px;
+      border-radius: 26px;
       background: var(--glass);
-      backdrop-filter: blur(26px);
-      -webkit-backdrop-filter: blur(26px);
+      backdrop-filter: blur(24px);
       border: 1px solid var(--border);
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 14px;
-      box-shadow: 0 24px 55px rgba(0, 0, 0, 0.45);
     }
-    .qr-frame {
-      padding: 16px;
-      border-radius: 22px;
-      background: #ffffff;
-      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.28);
-    }
+    .qr-frame { padding: 14px; border-radius: 20px; background: #fff; }
     .qr-code-tag {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      color: var(--accent);
-      padding: 6px 16px;
-      border-radius: 999px;
-      background: rgba(56, 189, 248, 0.16);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-    }
-    .btn-cta-wide {
-      width: 100%;
-      max-width: 280px;
-      height: 46px;
-      border-radius: 16px;
-      font-size: 14px;
       font-weight: 700;
-      color: #fff;
-      background: linear-gradient(135deg, #38bdf8, #2563eb);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-      cursor: pointer;
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.35);
     }
 
     /* Notifications View */
     .notif-list { display: flex; flex-direction: column; gap: 10px; }
     .notif-item {
-      padding: 16px;
-      border-radius: 22px;
+      padding: 16px 18px;
+      border-radius: 20px;
       background: var(--glass);
       backdrop-filter: blur(20px);
       border: 1px solid var(--border);
@@ -358,18 +274,8 @@
       align-items: flex-start;
       gap: 12px;
     }
-    .notif-item.is-unread {
-      border-color: rgba(56, 189, 248, 0.5);
-      background: rgba(56, 189, 248, 0.1);
-    }
-    .notif-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--accent);
-      margin-top: 5px;
-      flex-shrink: 0;
-    }
+    .notif-item.is-unread { border-color: rgba(56, 189, 248, 0.48); background: rgba(56, 189, 248, 0.09); }
+    .notif-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-top: 5px; flex-shrink: 0; }
     .notif-item:not(.is-unread) .notif-dot { background: rgba(255, 255, 255, 0.2); }
 
     /* Chat View */
@@ -383,86 +289,52 @@
       overflow: hidden;
     }
     .chat-messages {
-      padding: 16px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       max-height: 360px;
       overflow-y: auto;
     }
-    .msg {
-      max-width: 84%;
-      padding: 11px 14px;
-      border-radius: 18px;
-      font-size: 13.5px;
-      line-height: 1.45;
-    }
-    .msg--in {
-      align-self: flex-start;
-      background: rgba(255, 255, 255, 0.09);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-bottom-left-radius: 6px;
-    }
-    .msg--out {
-      align-self: flex-end;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #fff;
-      border-bottom-right-radius: 6px;
-    }
-    .msg-meta {
-      display: block;
-      font-size: 10.5px;
-      opacity: 0.75;
-      margin-bottom: 3px;
-      font-weight: 700;
-    }
+    .msg { max-width: 82%; padding: 11px 14px; border-radius: 18px; font-size: 13.5px; line-height: 1.45; }
+    .msg--in { align-self: flex-start; background: rgba(255, 255, 255, 0.09); border: 1px solid rgba(255, 255, 255, 0.14); border-bottom-left-radius: 6px; }
+    .msg--out { align-self: flex-end; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border-bottom-right-radius: 6px; }
+    .msg-meta { display: block; font-size: 10.5px; opacity: 0.72; margin-bottom: 3px; font-weight: 600; }
     .chat-form {
       display: flex;
       gap: 8px;
-      padding: 10px;
+      padding: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(7, 11, 22, 0.55);
+      background: rgba(7, 11, 22, 0.45);
     }
     .chat-input {
       flex: 1;
-      height: 44px;
-      padding: 0 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      min-height: 40px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
       background: rgba(255, 255, 255, 0.08);
       color: #fff;
-      font-size: 16px;
+      font-size: 14px;
       outline: none;
     }
     .chat-input:focus { border-color: var(--accent); }
-    .btn-send {
-      height: 44px;
-      padding: 0 18px;
-      border-radius: 14px;
-      font-size: 13.5px;
-      font-weight: 700;
-      color: #fff;
-      background: linear-gradient(135deg, #38bdf8, #2563eb);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.38);
-      cursor: pointer;
-    }
 
     footer {
       width: 100%;
-      padding: 14px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 20px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       text-align: center;
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.55;
       margin-top: auto;
     }
     footer strong { color: var(--text); }
 
-    /* Bottom Sticky Tab Bar (Pinned Flush Above Phone Home Indicator) */
+    /* Bottom Sticky Tab Bar Right Above Phone Home Indicator */
     .bottom-sticky-bar {
       position: fixed;
       left: 0;
@@ -470,21 +342,21 @@
       bottom: 0;
       z-index: 50;
       width: 100%;
-      padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-      background: rgba(9, 15, 30, 0.92);
-      backdrop-filter: blur(28px) saturate(190%);
-      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
+      background: rgba(10, 17, 34, 0.92);
+      backdrop-filter: blur(26px) saturate(180%);
+      -webkit-backdrop-filter: blur(26px) saturate(180%);
       border-top: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.55);
       display: flex;
       justify-content: center;
     }
     .bottom-sticky-inner {
       width: 100%;
-      max-width: 540px;
+      max-width: 640px;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
+      gap: 4px;
     }
     .dock-btn {
       position: relative;
@@ -493,37 +365,37 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
-      height: 54px;
-      border-radius: 16px;
+      min-height: 50px;
+      padding: 5px 4px;
+      border-radius: 14px;
       border: 1px solid transparent;
       background: transparent;
       color: var(--muted);
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
     }
     .dock-btn svg {
-      width: 21px;
-      height: 21px;
+      width: 20px;
+      height: 20px;
       stroke: currentColor;
       fill: none;
-      stroke-width: 2.1;
+      stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
     .dock-btn.is-active {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.24), rgba(37, 99, 235, 0.3));
-      border-color: rgba(125, 211, 252, 0.45);
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.35);
       color: #fff;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25);
     }
     .dock-btn.is-active svg { stroke: var(--accent); }
     .dock-badge {
       position: absolute;
-      top: 5px;
-      right: calc(50% - 19px);
-      min-width: 17px;
-      height: 17px;
+      top: 4px;
+      right: calc(50% - 18px);
+      min-width: 16px;
+      height: 16px;
       padding: 0 4px;
       border-radius: 999px;
       background: var(--accent);
@@ -532,13 +404,12 @@
       font-weight: 800;
       display: grid;
       place-items: center;
-      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.5);
     }
 
-    @media (max-width: 400px) {
-      .brand span { display: none; }
-      .profile-pill { max-width: 108px; }
-      .btn-viewall, .btn-signout { padding: 0 11px; font-size: 11.5px; }
+    @media (max-width: 600px) {
+      nav.top-nav { padding: 10px 12px; gap: 8px; }
+      .profile-pill { max-width: 124px; }
+      .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -548,16 +419,16 @@
   <div class="wrap">
     <nav class="top-nav">
       <a class="brand" href="home.html">
-        <svg width="28" height="28" viewBox="0 0 64 64" fill="none" style="border-radius:9px;flex-shrink:0;">
+        <svg width="26" height="26" viewBox="0 0 64 64" fill="none" style="border-radius:8px;flex-shrink:0;">
           <defs><linearGradient id="c4-g" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs>
           <rect x="4" y="4" width="56" height="56" rx="16" fill="#070d1c" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1.5"/>
           <circle cx="32" cy="32" r="10" fill="url(#c4-g)"/>
           <ellipse cx="32" cy="32" rx="21" ry="8.5" transform="rotate(-26 32 32)" stroke="#7dd3fc" stroke-width="2.4"/>
           <circle cx="48" cy="24" r="3" fill="#ffffff"/>
         </svg>
-        <span>EventPass</span>
+        EventPass
       </a>
-      <div class="nav-right">
+      <div class="nav-actions">
         <button id="viewAllBtn" type="button" class="btn-viewall">View All</button>
         <div id="profileSnippet" class="profile-pill" title="Active session">
           <span id="profileAvatar" class="avatar">A</span>
@@ -566,7 +437,7 @@
             <span id="profileStatus" class="profile-status"><span class="status-dot"></span>Signed in</span>
           </div>
         </div>
-        <button id="logoutBtn" type="button" class="btn-signout">Sign Out</button>
+        <button id="logoutBtn" type="button" class="btn-primary">Sign Out</button>
       </div>
     </nav>
 
@@ -574,16 +445,16 @@
     <main id="view-home" class="view-pane is-active">
       <section id="allEventsDrawer" class="all-events-drawer" aria-label="All Events Directory">
         <div class="section-head">
-          <div class="section-head-row">
-            <div>
-              <h2>All Events</h2>
-              <p>Active &amp; passive event directory.</p>
+          <div>
+            <h2>All Events Directory</h2>
+            <p>Switch between Active Events and Passive Events.</p>
+          </div>
+          <div class="nav-actions">
+            <div class="tabs" role="tablist">
+              <button id="tabActive" type="button" class="tab-btn is-active" role="tab" aria-selected="true">Active Events</button>
+              <button id="tabPassive" type="button" class="tab-btn" role="tab" aria-selected="false">Passive Events</button>
             </div>
             <button id="closeAllBtn" type="button" class="btn-ghost">Close</button>
-          </div>
-          <div class="segmented segmented--2" role="tablist">
-            <button id="tabActive" type="button" class="seg-btn is-active" role="tab" aria-selected="true">Active Events</button>
-            <button id="tabPassive" type="button" class="seg-btn" role="tab" aria-selected="false">Passive Events</button>
           </div>
         </div>
         <div id="allEventsGrid" class="grid"></div>
@@ -595,10 +466,10 @@
             <h2>Your Events</h2>
             <p>Events you have completed or have ongoing.</p>
           </div>
-          <div class="segmented" role="tablist">
-            <button type="button" class="seg-btn is-active" data-your-filter="all">All (4)</button>
-            <button type="button" class="seg-btn" data-your-filter="assigned">Ongoing (2)</button>
-            <button type="button" class="seg-btn" data-your-filter="done">Completed (2)</button>
+          <div class="tabs" role="tablist">
+            <button type="button" class="tab-btn is-active" data-your-filter="all">All (4)</button>
+            <button type="button" class="tab-btn" data-your-filter="assigned">Ongoing (2)</button>
+            <button type="button" class="tab-btn" data-your-filter="done">Completed (2)</button>
           </div>
         </div>
         <div id="yourEventsGrid" class="grid"></div>
@@ -610,12 +481,12 @@
       <div class="section-head">
         <div>
           <h2>EventPass QR Code</h2>
-          <p>Present this digital pass at the venue gate for check-in.</p>
+          <p>Present this pass at the venue gate for check-in.</p>
         </div>
       </div>
       <div class="qr-panel">
         <div class="qr-frame">
-          <svg width="180" height="180" viewBox="0 0 21 21" shape-rendering="crispEdges" aria-label="EventPass QR Code">
+          <svg width="176" height="176" viewBox="0 0 21 21" shape-rendering="crispEdges" aria-label="EventPass QR Code">
             <rect width="21" height="21" fill="#ffffff"/>
             <path fill="#070b16" d="M1,1h7v7h-7zM2,2v5h5v-5zM3,3h3v3h-3zM13,1h7v7h-7zM14,2v5h5v-5zM15,3h3v3h-3zM1,13h7v7h-7zM2,14v5h5v-5zM3,15h3v3h-3zM9,2h2v2h-2zM10,5h2v3h-2zM2,9h3v2h-3zM6,10h3v2h-3zM11,9h3v2h-3zM16,9h3v3h-3zM9,13h2v4h-2zM13,12h2v2h-2zM16,14h4v2h-4zM12,17h3v3h-3zM17,17h2v3h-2z"/>
           </svg>
@@ -623,20 +494,18 @@
         <div id="qrPassId" class="qr-code-tag">#EP-2026-8841</div>
         <div id="qrHolderName" style="font-size:16px;font-weight:700;">Aniket Hinge</div>
         <div style="font-size:12.5px;color:var(--muted);">Ongoing: OJT Sprint Demo Day • Innovation Lab</div>
-        <button id="refreshQrBtn" type="button" class="btn-cta-wide">Refresh Dynamic Token</button>
+        <button id="refreshQrBtn" type="button" class="btn-viewall">Refresh Dynamic Token</button>
       </div>
     </section>
 
     <!-- VIEW 3: NOTIFICATIONS -->
     <section id="view-notifications" class="view-pane" aria-label="Notifications">
       <div class="section-head">
-        <div class="section-head-row">
-          <div>
-            <h2>Notifications</h2>
-            <p>Event updates and reminders.</p>
-          </div>
-          <button id="markReadBtn" type="button" class="btn-ghost">Mark all read</button>
+        <div>
+          <h2>Notifications</h2>
+          <p>Event updates and reminders.</p>
         </div>
+        <button id="markReadBtn" type="button" class="btn-ghost">Mark all read</button>
       </div>
       <div id="notifList" class="notif-list"></div>
     </section>
@@ -653,16 +522,16 @@
         <div id="chatMessages" class="chat-messages">
           <div class="msg msg--in">
             <span class="msg-meta">OJT Coordinator Desk • 10:15 AM</span>
-            Welcome to EventPass! Your pass for OJT Sprint Demo Day is active. Need any help with check-in or ongoing events?
+            Welcome to EventPass! Your pass for OJT Sprint Demo Day is active.
           </div>
           <div class="msg msg--in">
             <span class="msg-meta">Gate Lead (Innovation Lab) • 11:02 AM</span>
-            Reminder: Keep your QR code ready 10 minutes before your demo slot.
+            Reminder: Keep your QR code ready 10 minutes before your session.
           </div>
         </div>
         <form id="chatForm" class="chat-form">
           <input id="chatInput" class="chat-input" type="text" placeholder="Message coordinator..." autocomplete="off" />
-          <button type="submit" class="btn-send">Send</button>
+          <button type="submit" class="btn-primary">Send</button>
         </form>
       </div>
     </section>
@@ -673,10 +542,13 @@
         Developed as an <strong>On-the-Job Training (OJT)</strong> academic project at
         <strong>Polaris School of Technology</strong> (Medhavi Skills University) by <strong>Aniket Hinge</strong>.
       </div>
+      <div>
+        Intended strictly for educational demonstration, campus event workflow testing, and portfolio evaluation—not for commercial ticketing transactions.
+      </div>
     </footer>
   </div>
 
-  <!-- Bottom Sticky Navigation Bar -->
+  <!-- Bottom Sticky Tab Bar Right Above Phone Home Indicator -->
   <nav class="bottom-sticky-bar" aria-label="Primary Bottom Navigation">
     <div class="bottom-sticky-inner">
       <button type="button" class="dock-btn is-active" data-nav="home" aria-current="page">
@@ -732,7 +604,7 @@
         if (active) btn.setAttribute("aria-current", "page");
         else btn.removeAttribute("aria-current");
       });
-      viewAllBtn.style.display = target === "home" ? "inline-flex" : "none";
+      viewAllBtn.style.display = target === "home" ? "inline-block" : "none";
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
