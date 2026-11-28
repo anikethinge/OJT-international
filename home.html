@@ -67,27 +67,6 @@
     }
     .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border-color: rgba(255, 255, 255, 0.28); }
 
-    .welcome-card {
-      padding: 28px; border-radius: 28px;
-      background: var(--glass); backdrop-filter: blur(28px) saturate(170%); -webkit-backdrop-filter: blur(28px) saturate(170%);
-      border: 1px solid var(--border); box-shadow: 0 28px 65px rgba(0, 0, 0, 0.45);
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
-    }
-    .welcome-card h1 { margin: 0 0 6px; font-size: clamp(23px, 4vw, 32px); letter-spacing: -0.02em; }
-    .welcome-card p { margin: 0; color: var(--muted); font-size: 14px; }
-
-    .pass-ticket {
-      padding: 16px 20px; border-radius: 20px; min-width: 245px;
-      background: rgba(7, 13, 28, 0.65); border: 1px solid rgba(125, 211, 252, 0.35);
-      display: flex; align-items: center; gap: 14px;
-    }
-    .qr-box {
-      width: 54px; height: 54px; border-radius: 12px; background: #fff; padding: 6px;
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; flex-shrink: 0;
-    }
-    .qr-box span { background: #070b16; border-radius: 2px; }
-    .qr-box span:nth-child(2), .qr-box span:nth-child(5), .qr-box span:nth-child(8) { background: #2563eb; }
-
     .section-head {
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
       padding: 0 4px;
@@ -165,25 +144,6 @@
       </div>
     </nav>
 
-    <section class="welcome-card">
-      <div>
-        <h1 id="welcomeTitle">Welcome back!</h1>
-        <p id="welcomeSub">Track your assigned passes, completed events, and live campus check-ins.</p>
-      </div>
-      <div class="pass-ticket">
-        <div class="qr-box" aria-hidden="true">
-          <span></span><span></span><span></span>
-          <span></span><span></span><span></span>
-          <span></span><span></span><span></span>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--accent);font-weight:700;">ACTIVE PASS ID</div>
-          <div id="passCode" style="font-size:15px;font-weight:700;margin:2px 0;">#EP-2026-8841</div>
-          <div id="userEmail" style="font-size:12px;color:var(--muted);">aniket@polaris.edu</div>
-        </div>
-      </div>
-    </section>
-
     <section id="allEventsDrawer" class="all-events-drawer" aria-label="All Events Directory">
       <div class="section-head">
         <div>
@@ -230,18 +190,11 @@
 
   <script>
     const raw = localStorage.getItem("eventpass_user");
-    let user = { name: "Aniket Hinge", email: "aniket@polaris.edu", role: "attendee" };
     if (!raw) {
       window.location.href = "index.html";
     } else {
-      user = JSON.parse(raw);
-      document.getElementById("welcomeTitle").textContent = `Welcome back, ${user.name || "Explorer"}!`;
-      document.getElementById("userEmail").textContent = user.email || "";
-      const isOrg = user.role === "organizer";
-      document.getElementById("roleBadge").textContent = isOrg ? "Organizer Hub" : "Attendee Pass";
-      if (isOrg) {
-        document.getElementById("welcomeSub").textContent = "Organizer Hub active — inspect assigned event rosters, completed sessions, and active/passive event catalogs.";
-      }
+      const user = JSON.parse(raw);
+      document.getElementById("roleBadge").textContent = user.role === "organizer" ? "Organizer Hub" : "Attendee Pass";
     }
 
     const YOUR_EVENTS = [
@@ -250,7 +203,7 @@
         date: "Nov 30, 2026 • Innovation Lab",
         status: "assigned",
         badge: "Assigned",
-        roleNote: "Pass #EP-9021 • Gate Check-In Assigned",
+        roleNote: "Gate Check-In Assigned",
         desc: "Live full-stack architecture and Liquid Glass UI evaluation with faculty mentors."
       },
       {
@@ -258,8 +211,8 @@
         date: "Dec 09, 2026 • Open Arena",
         status: "assigned",
         badge: "Assigned",
-        roleNote: "Pass #EP-9144 • Team Squad Lead",
-        desc: "24-hour rapid build sprint with instant QR gate verification and live roster sync."
+        roleNote: "Team Squad Lead",
+        desc: "24-hour rapid build sprint with instant roster sync."
       },
       {
         title: "Constellation 2026 Campus Launch",
@@ -267,7 +220,7 @@
         status: "done",
         badge: "Completed",
         roleNote: "Checked in at 09:42 AM • Verified",
-        desc: "Polaris School of Technology orientation showcase and AI photo pass distribution."
+        desc: "Polaris School of Technology orientation showcase and campus event launch."
       },
       {
         title: "Cloud & Applied AI Track Workshop",
@@ -285,7 +238,7 @@
           title: "OJT Sprint Demo Day",
           date: "Nov 30, 2026 • Innovation Lab",
           badge: "Active",
-          meta: "142 Passes Issued • Live Check-In Open",
+          meta: "142 Registered • Live Check-In Open",
           desc: "Currently open for student presenters and faculty evaluators."
         },
         {
@@ -293,13 +246,13 @@
           date: "Dec 09, 2026 • Open Arena",
           badge: "Active",
           meta: "310 Registered • Registration Live",
-          desc: "Active campus hackathon accepting team pass claims and organizer check-ins."
+          desc: "Active campus hackathon accepting team registrations and organizer check-ins."
         },
         {
           title: "Winter Open-Source Code Sprint",
           date: "Dec 18, 2026 • Tech Hub",
           badge: "Active",
-          meta: "88 Passes Available • Open Now",
+          meta: "88 Spots Available • Open Now",
           desc: "Collaborative pull-request sprint and mentor code review session."
         }
       ],
@@ -309,7 +262,7 @@
           date: "Aug 24, 2026 • Main Auditorium",
           badge: "Passive",
           meta: "Archived • 480 Total Check-Ins",
-          desc: "Concluded campus flagship event; pass scanning and edits are closed."
+          desc: "Concluded campus flagship event; check-ins and edits are closed."
         },
         {
           title: "Cloud & Applied AI Track Workshop",
@@ -346,9 +299,7 @@
       `).join("");
     }
 
-    let currentCatalogTab = "active";
     function renderAllEvents(tab = "active") {
-      currentCatalogTab = tab;
       document.getElementById("tabActive").classList.toggle("is-active", tab === "active");
       document.getElementById("tabActive").setAttribute("aria-selected", String(tab === "active"));
       document.getElementById("tabPassive").classList.toggle("is-active", tab === "passive");
