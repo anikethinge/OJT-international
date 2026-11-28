@@ -173,6 +173,19 @@
     }
     .lgs__modal h3 { margin: 0 0 10px; font-size: 17px; color: var(--lgs-accent); }
     .lgs__modal p, .lgs__modal li { font-size: 13px; line-height: 1.6; color: rgba(248, 250, 252, 0.8); }
+
+    /* Mobile UI Polish */
+    .lgs__input { font-size: 16px; min-height: 44px; }
+    .lgs__role-btn, .lgs__mode, .lgs__submit, .lgs__pill-btn { min-height: 40px; }
+    @media (max-width: 520px) {
+      .lgs { padding: 14px; gap: 14px; justify-content: flex-start; }
+      .lgs__top-bar { position: static; width: 100%; flex-wrap: wrap; gap: 8px; }
+      .lgs__demo-pills { flex: 1; }
+      .lgs__demo-pills .lgs__pill-btn { flex: 1; text-align: center; }
+      .lgs__panel { margin-top: 4px; padding: 22px 18px; border-radius: 24px; }
+      .lgs__title { font-size: 22px; }
+      .lgs__footer { padding: 12px 14px; font-size: 11px; }
+    }
   </style>
 </head>
 <body>
